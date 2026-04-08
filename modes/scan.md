@@ -66,6 +66,55 @@ Los `search_queries` con `site:` filters cubren portales de forma transversal (t
 
 Los niveles son aditivos — se ejecutan todos, los resultados se mezclan y deduplicar.
 
+### LinkedIn en Nivel 3
+
+LinkedIn NO debe tratarse como un portal de crawling directo dentro de `scan`. Las páginas públicas de búsqueda suelen redirigir a login. El uso correcto dentro de este proyecto es:
+
+1. Descubrir URLs de LinkedIn por WebSearch u otra fuente externa fiable
+2. Si la URL es de LinkedIn (`jobs/view/...` o `search-results?currentJobId=...`), resolverla localmente con:
+
+```bash
+node resolve-linkedin.mjs '<linkedin-url>' \
+  --add-to-pipeline \
+  --keep-lead \
+  --title '<job-title>' \
+  --company '<company-name>' \
+  --query-name '<query-name>'
+```
+
+El resolver:
+- normaliza la URL a `https://www.linkedin.com/jobs/view/{id}/`
+- extrae el JD público con Playwright si está accesible
+- guarda un archivo local en `jds/`
+- añade `local:jds/...` a `data/pipeline.md`
+- registra la URL canónica en `data/scan-history.tsv`
+- si LinkedIn bloquea o no expone suficiente detalle, conserva el lead en `On Hold — Manual Verify` usando el título y empresa ya descubiertos por search
+
+Si LinkedIn solo expone una página de búsqueda que redirige a login y no existe una URL concreta de job, NO añadir nada a `Pendientes`.
+
+### Indeed en Nivel 3
+
+Indeed puede descubrirse con WebSearch, pero sus URLs vienen en formatos distintos (`viewjob?jk=...` o `?vjk=...`). El uso correcto es:
+
+```bash
+node resolve-indeed.mjs '<indeed-url>' \
+  --add-to-pipeline \
+  --keep-lead \
+  --title '<job-title>' \
+  --company '<company-name>' \
+  --query-name '<query-name>'
+```
+
+El resolver:
+- normaliza URLs `jk` y `vjk` a `https://{host}/viewjob?jk={id}`
+- intenta extraer el JD público con Playwright
+- guarda un archivo local en `jds/`
+- añade `local:jds/...` a `data/pipeline.md`
+- registra la URL canónica en `data/scan-history.tsv`
+- si Indeed devuelve bloqueo de Cloudflare o metadatos insuficientes, conserva el lead en `On Hold — Manual Verify` usando el título y empresa ya descubiertos por search
+
+Si Indeed devuelve una página bloqueada por Cloudflare o no expone metadatos fiables, NO añadir nada a `Pendientes` salvo que el resolver pueda conservar el lead en `On Hold — Manual Verify`.
+
 ## Workflow
 
 1. **Leer configuración**: `portals.yml`
@@ -103,6 +152,18 @@ Los niveles son aditivos — se ejecutan todos, los resultados se mezclan y dedu
       - **url**: URL del resultado
       - **company**: después del " @ " en el título, o extraer del dominio/path
    c. Acumular en lista de candidatos (dedup con Nivel 1+2)
+   d. Si el resultado es una URL de LinkedIn:
+      - NO añadir la URL raw directamente a `pipeline.md`
+      - Resolverla con `node resolve-linkedin.mjs '<url>' --add-to-pipeline --keep-lead --title '<title>' --company '<company>' --query-name '<query_name>'`
+      - Si el resolver devuelve `kept_lead`, dejar la oferta en `On Hold — Manual Verify`
+      - Si el resolver falla sin metadata suficiente, registrar como `skipped_expired` o `skipped_title` según corresponda y continuar
+      - Si el resolver ya la conoce por URL canónica o company+role, tratarla como duplicado
+   e. Si el resultado es una URL de Indeed:
+      - NO añadir la URL raw directamente a `pipeline.md`
+      - Resolverla con `node resolve-indeed.mjs '<url>' --add-to-pipeline --keep-lead --title '<title>' --company '<company>' --query-name '<query_name>'`
+      - Si el resolver devuelve `kept_lead`, dejar la oferta en `On Hold — Manual Verify`
+      - Si el resolver devuelve `blocked`, `unresolved` o `expired` sin metadata suficiente, no promover el resultado
+      - Si el resolver ya la conoce por URL canónica o company+role, tratarla como duplicado
 
 6. **Filtrar por título** usando `title_filter` de `portals.yml`:
    - Al menos 1 keyword de `positive` debe aparecer en el título (case-insensitive)
@@ -131,6 +192,9 @@ Los niveles son aditivos — se ejecutan todos, los resultados se mezclan y dedu
    e. Si activa: continuar al paso 8
 
    **No interrumpir el scan entero si una URL falla.** Si `browser_navigate` da error (timeout, 403, etc.), marcar como `skipped_expired` y continuar con la siguiente.
+
+   **Excepción LinkedIn:** si la URL ya fue resuelta por `resolve-linkedin.mjs` y convertida a `local:jds/...`, no volver a verificar la URL original en este paso.
+   **Excepción Indeed:** si la URL ya fue resuelta por `resolve-indeed.mjs` y convertida a `local:jds/...`, no volver a verificar la URL original en este paso.
 
 8. **Para cada oferta nueva verificada que pase filtros**:
    a. Añadir a `pipeline.md` sección "Pendientes": `- [ ] {url} | {company} | {title}`

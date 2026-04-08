@@ -9,6 +9,8 @@
     "dedup": "node dedup-tracker.mjs",
     "merge": "node merge-tracker.mjs",
     "pdf": "node generate-pdf.mjs",
+    "indeed:resolve": "node resolve-indeed.mjs",
+    "linkedin:resolve": "node resolve-linkedin.mjs",
     "sync-check": "node cv-sync-check.mjs",
     "update:check": "node update-system.mjs check",
     "update": "node update-system.mjs apply",
