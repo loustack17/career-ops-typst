@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "candidate_name": "Lou Chang",
+    "company": "TextNow",
+    "role": "Site Reliability Engineer",
+    "language": "en",
+    "paper_size": "letter",
+    "source_jd": "examples/textnow-jd.txt",
+    "source_report": "reports/003-textnow-2026-04-07.md"
+  },
+  "summary": "Site reliability and platform-focused engineer with 5+ years building cloud infrastructure, CI/CD automation, and production-safe delivery systems. Recent work cut provisioning from 2+ hours to under 10 minutes with Terraform-driven environments and strengthened release reliability with quality gates, deploy-on-merge workflows, and tighter secret isolation.",
+  "core_competencies": [
+    "Site Reliability Engineering",
+    "Terraform",
+    "AWS Infrastructure",
+    "CI/CD Automation",
+    "Incident Response",
+    "Linux Operations",
+    "Cloud Reliability",
+    "Performance Debugging"
+  ],
+  "experience": [
+    {
+      "company": "Self-employed",
+      "location": "Remote",
+      "role": "Independent Software Engineer (Contract)",
+      "period": "Sep. 2024 - Present",
+      "bullets": [
+        "Designed the infrastructure, environment model, and CI/CD strategy to bring a startup from PoC to production-ready; migrated from AWS to GCP using Terraform with identity-based deployments and dev/prod environment separation, cutting provisioning from 2+ hours to under 10 minutes.",
+        "Hardened the CI/CD pipeline and release model: enforced quality gates on every PR with automated deploy-on-merge, pinned supply chain dependencies, isolated CI credentials, and scoped secrets per environment.",
+        "Built backend services for a commerce platform with Python, FastAPI, PostgreSQL, and domain-driven design, preserving a clean path from application work to production delivery."
+      ]
+    },
+    {
+      "company": "Duotify Inc.",
+      "location": "Taipei, Taiwan",
+      "role": "Web Development Engineer",
+      "period": "Jun. 2020 - Jan. 2024",
+      "bullets": [
+        "Managed delivery infrastructure across Azure DevOps and self-hosted GitLab CE on Linux, maintaining pipeline reliability, runner availability, and deployment readiness while reducing release preparation overhead by 30+ minutes.",
+        "Restructured a critical reporting path from application-layer execution to database-native execution in SQL Server, resolving a recurring bottleneck across healthcare and finance platforms and cutting runtime from 3 minutes to 4 seconds.",
+        "Delivered backend services in ASP.NET Core for government research and financial services clients; provisioned and operated AWS environments with EC2, S3, and RDS for production and test workloads."
+      ]
+    },
+    {
+      "company": "Unitech Computer Co., Ltd.",
+      "location": "Taipei, Taiwan",
+      "role": "ERP Application Development Engineer",
+      "period": "Mar. 2019 - Jun. 2020",
+      "bullets": [
+        "Sustained production stability and data integrity across B2B and internal ERP systems, managing 20+ monthly releases over 16 months against business-critical operational constraints.",
+        "Resolved 8+ critical production issues annually through structured debugging and query optimization; assessed infrastructure modernization paths for legacy system upgrades."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Production Infrastructure Foundation",
+      "badge": "Most Relevant",
+      "description": "Built Terraform-based cloud environments, identity-based deployments, and release automation for a startup going from PoC to production.",
+      "tech": "Terraform, AWS, GCP, CI/CD"
+    },
+    {
+      "title": "Delivery Reliability Operations",
+      "badge": "",
+      "description": "Operated Linux-based CI/CD systems used by multiple teams and reduced release preparation overhead by 30+ minutes.",
+      "tech": "Azure DevOps, GitLab CE, Linux"
+    }
+  ],
+  "education": [
+    {
+      "title": "Diploma, Computer Programming",
+      "institution": "Seneca Polytechnic",
+      "year": "2024 - 2025",
+      "description": ""
+    },
+    {
+      "title": "Bachelor's, Information Management",
+      "institution": "Hwa Hsia University of Technology",
+      "year": "2018 - 2020",
+      "description": ""
+    }
+  ],
+  "certifications": [
+    {
+      "title": "AZ-900",
+      "issuer": "Microsoft",
+      "year": ""
+    }
+  ],
+  "skills": [
+    {
+      "category": "CI/CD and automation",
+      "items": [
+        "Azure DevOps Pipelines",
+        "GitLab CI (self-hosted)",
+        "GitHub Actions",
+        "Docker",
+        "shell scripting"
+      ]
+    },
+    {
+      "category": "Cloud and infrastructure",
+      "items": [
+        "AWS (EC2, S3, RDS)",
+        "GCP",
+        "Azure",
+        "Terraform",
+        "Linux (CentOS/RHEL)",
+        "AZ-900"
+      ]
+    },
+    {
+      "category": "Development",
+      "items": [
+        "C#",
+        ".NET (ASP.NET Core/MVC)",
+        "Python",
+        "FastAPI",
+        "Go",
+        "SQL Server",
+        "PostgreSQL",
+        "TypeScript",
+        "Bash"
+      ]
+    }
+  ]
+}

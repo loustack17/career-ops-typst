@@ -18,7 +18,8 @@ Eres un worker de evaluación de ofertas de empleo for the candidate (read name 
 | llms.txt | `llms.txt (if exists)` | SIEMPRE |
 | article-digest.md | `article-digest.md (project root)` | SIEMPRE (proof points) |
 | i18n.ts | `i18n.ts (if exists, optional)` | Solo entrevistas/deep |
-| cv-template.html | `templates/cv-template.html` | Para PDF |
+| cv.typ | `templates/cv.typ` | Entry point PDF |
+| cv modules | `templates/cv/*.typ` | Layout PDF |
 | generate-pdf.mjs | `generate-pdf.mjs` | Para PDF |
 
 **REGLA: NUNCA escribir en cv.md ni i18n.ts.** Son read-only.
@@ -228,13 +229,14 @@ Donde `{company-slug}` es el nombre de empresa en lowercase, sin espacios, con g
 8. Reordena bullets de experiencia por relevancia al JD
 9. Construye competency grid (6-8 keyword phrases)
 10. Inyecta keywords en logros existentes (**NUNCA inventa**)
-11. Genera HTML completo desde template (lee `templates/cv-template.html`)
-12. Escribe HTML a `/tmp/cv-candidate-{company-slug}.html`
+11. Construye un payload temporal con los overrides del CV para esta oferta
+12. Escribe el payload a `/tmp/cv-candidate-{company-slug}.json`
 13. Ejecuta:
 ```bash
 node generate-pdf.mjs \
-  /tmp/cv-candidate-{company-slug}.html \
+  cv.md \
   output/cv-candidate-{company-slug}-{{DATE}}.pdf \
+  --payload=/tmp/cv-candidate-{company-slug}.json \
   --format={letter|a4}
 ```
 14. Reporta: ruta PDF, nº páginas, % cobertura keywords
@@ -248,13 +250,12 @@ node generate-pdf.mjs \
 - Keywords distribuidas: Summary (top 5), primer bullet de cada rol, Skills section
 
 **Diseño:**
-- Fonts: Space Grotesk (headings, 600-700) + DM Sans (body, 400-500)
-- Fonts self-hosted: `fonts/`
-- Header: Space Grotesk 24px bold + gradiente cyan→purple 2px + contacto
-- Section headers: Space Grotesk 13px uppercase, color cyan `hsl(187,74%,32%)`
-- Body: DM Sans 11px, line-height 1.5
+- Renderer: `templates/cv.typ` + `templates/cv/*.typ`
+- Header: same visual language as the active CV template, with accent rule + contact row
+- Section headers: uppercase, cyan primary, compact divider
+- Body: compact ATS-friendly single-column layout
 - Company names: purple `hsl(270,70%,45%)`
-- Márgenes: 0.6in
+- Márgenes: 0.45in top/bottom, 0.5in left/right
 - Background: blanco
 
 **Estrategia keyword injection (ético):**
@@ -262,33 +263,24 @@ node generate-pdf.mjs \
 - NUNCA añadir skills the candidate doesn't have
 - Ejemplo: JD dice "RAG pipelines" y CV dice "LLM workflows with retrieval" → "RAG pipeline design and LLM orchestration workflows"
 
-**Template placeholders (en cv-template.html):**
+**Payload temporal (`/tmp/cv-candidate-{company-slug}.json`):**
 
-| Placeholder | Contenido |
-|-------------|-----------|
-| `{{LANG}}` | `en` o `es` |
-| `{{PAGE_WIDTH}}` | `8.5in` (letter) o `210mm` (A4) |
-| `{{NAME}}` | (from profile.yml) |
-| `{{EMAIL}}` | (from profile.yml) |
-| `{{LINKEDIN_URL}}` | (from profile.yml) |
-| `{{LINKEDIN_DISPLAY}}` | (from profile.yml) |
-| `{{PORTFOLIO_URL}}` | (from profile.yml) |
-| `{{PORTFOLIO_DISPLAY}}` | (from profile.yml) |
-| `{{LOCATION}}` | (from profile.yml) |
-| `{{SECTION_SUMMARY}}` | Professional Summary / Resumen Profesional |
-| `{{SUMMARY_TEXT}}` | Summary personalizado con keywords |
-| `{{SECTION_COMPETENCIES}}` | Core Competencies / Competencias Core |
-| `{{COMPETENCIES}}` | `<span class="competency-tag">keyword</span>` × 6-8 |
-| `{{SECTION_EXPERIENCE}}` | Work Experience / Experiencia Laboral |
-| `{{EXPERIENCE}}` | HTML de cada trabajo con bullets reordenados |
-| `{{SECTION_PROJECTS}}` | Projects / Proyectos |
-| `{{PROJECTS}}` | HTML de top 3-4 proyectos |
-| `{{SECTION_EDUCATION}}` | Education / Formación |
-| `{{EDUCATION}}` | HTML de educación |
-| `{{SECTION_CERTIFICATIONS}}` | Certifications / Certificaciones |
-| `{{CERTIFICATIONS}}` | HTML de certificaciones |
-| `{{SECTION_SKILLS}}` | Skills / Competencias |
-| `{{SKILLS}}` | HTML de skills |
+| Campo | Contenido |
+|-------|-----------|
+| `meta.company` | Empresa |
+| `meta.role` | Rol |
+| `meta.paper_size` | `letter` o `a4` |
+| `meta.source_jd` | URL o ruta del JD |
+| `meta.source_report` | Ruta del report |
+| `summary` | Summary personalizado |
+| `core_competencies` | 6-8 capability phrases |
+| `experience` | Roles con bullets reordenados |
+| `projects` | Top 0-4 iniciativas relevantes |
+| `education` | Override opcional |
+| `certifications` | Override opcional |
+| `skills` | Skills finales |
+
+No generes HTML completo ni un documento Typst completo. Genera solo el payload temporal y deja que `generate-pdf.mjs` compile el diseño existente.
 
 ### Paso 5 — Tracker Line
 

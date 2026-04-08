@@ -11,14 +11,13 @@
    - Resto del mundo → `a4`
 6. Detecta arquetipo del rol → adapta framing
 7. Reescribe Professional Summary inyectando keywords del JD + exit narrative bridge ("Built and sold a business. Now applying systems thinking to [domain del JD].")
-8. Selecciona top 3-4 proyectos más relevantes para la oferta
+8. If cv.md has a dedicated Projects section with personal/side/open-source projects, select top 3-4 most relevant for the offer. If no such section exists, leave `projects` as an empty array — NEVER synthesize projects from paid work experience
 9. Reordena bullets de experiencia por relevancia al JD
 10. Construye competency grid desde requisitos del JD (6-8 keyword phrases)
 11. Inyecta keywords naturalmente en logros existentes (NUNCA inventa)
-12. Genera HTML completo desde template + contenido personalizado
-13. Lee `name` de `config/profile.yml` → normaliza a kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
-14. Escribe HTML a `/tmp/cv-{candidate}-{company}.html`
-15. Ejecuta: `node generate-pdf.mjs /tmp/cv-{candidate}-{company}.html output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --format={letter|a4}`
+12. Construye un payload temporal con overrides del CV para esta oferta
+13. Escribe el payload a `/tmp/cv-candidate-{company}.json`
+14. Ejecuta: `node generate-pdf.mjs cv.md output/cv-candidate-{company}-{YYYY-MM-DD}.pdf --payload=/tmp/cv-candidate-{company}.json --format={letter|a4}`
 15. Reporta: ruta del PDF, nº páginas, % cobertura de keywords
 
 ## Reglas ATS (parseo limpio)
@@ -33,13 +32,13 @@
 
 ## Diseño del PDF
 
-- **Fonts**: Space Grotesk (headings, 600-700) + DM Sans (body, 400-500)
-- **Fonts self-hosted**: `fonts/`
+- **Renderer**: Typst template modular (`templates/cv.typ` + `templates/cv/*.typ`)
+- **Fonts**: heading/body fonts chosen by the template, matching the active CV design as closely as possible
 - **Header**: nombre en Space Grotesk 24px bold + línea gradiente `linear-gradient(to right, hsl(187,74%,32%), hsl(270,70%,45%))` 2px + fila de contacto
 - **Section headers**: Space Grotesk 13px, uppercase, letter-spacing 0.05em, color cyan primary
 - **Body**: DM Sans 11px, line-height 1.5
 - **Company names**: color accent purple `hsl(270,70%,45%)`
-- **Márgenes**: 0.6in
+- **Márgenes**: 0.45in top/bottom, 0.5in left/right
 - **Background**: blanco puro
 
 ## Orden de secciones (optimizado "6-second recruiter scan")
@@ -48,7 +47,7 @@
 2. Professional Summary (3-4 líneas, keyword-dense)
 3. Core Competencies (6-8 keyword phrases en flex-grid)
 4. Work Experience (cronológico inverso)
-5. Projects (top 3-4 más relevantes)
+5. Projects (only if cv.md has a dedicated Projects section; omit otherwise)
 6. Education & Certifications
 7. Skills (idiomas + técnicos)
 
@@ -61,36 +60,28 @@ Ejemplos de reformulación legítima:
 
 **NUNCA añadir skills que el candidato no tiene. Solo reformular experiencia real con el vocabulario exacto del JD.**
 
-## Template HTML
+## Payload temporal para Typst
 
-Usar el template en `cv-template.html`. Reemplazar los placeholders `{{...}}` con contenido personalizado:
+Usar `cv.md` como source of truth y generar solo un payload temporal con overrides para esta oferta. No generar HTML completo ni un documento Typst completo.
 
-| Placeholder | Contenido |
-|-------------|-----------|
-| `{{LANG}}` | `en` o `es` |
-| `{{PAGE_WIDTH}}` | `8.5in` (letter) o `210mm` (A4) |
-| `{{NAME}}` | (from profile.yml) |
-| `{{PHONE}}` | (from profile.yml — include with its separator only when `profile.yml` has a non-empty `phone` value; omit both `<span>` and `<span class="separator">` otherwise) |
-| `{{EMAIL}}` | (from profile.yml) |
-| `{{LINKEDIN_URL}}` | [from profile.yml] |
-| `{{LINKEDIN_DISPLAY}}` | [from profile.yml] |
-| `{{PORTFOLIO_URL}}` | [from profile.yml] (o /es según idioma) |
-| `{{PORTFOLIO_DISPLAY}}` | [from profile.yml] (o /es según idioma) |
-| `{{LOCATION}}` | [from profile.yml] |
-| `{{SECTION_SUMMARY}}` | Professional Summary / Resumen Profesional |
-| `{{SUMMARY_TEXT}}` | Summary personalizado con keywords |
-| `{{SECTION_COMPETENCIES}}` | Core Competencies / Competencias Core |
-| `{{COMPETENCIES}}` | `<span class="competency-tag">keyword</span>` × 6-8 |
-| `{{SECTION_EXPERIENCE}}` | Work Experience / Experiencia Laboral |
-| `{{EXPERIENCE}}` | HTML de cada trabajo con bullets reordenados |
-| `{{SECTION_PROJECTS}}` | Projects / Proyectos |
-| `{{PROJECTS}}` | HTML de top 3-4 proyectos |
-| `{{SECTION_EDUCATION}}` | Education / Formación |
-| `{{EDUCATION}}` | HTML de educación |
-| `{{SECTION_CERTIFICATIONS}}` | Certifications / Certificaciones |
-| `{{CERTIFICATIONS}}` | HTML de certificaciones |
-| `{{SECTION_SKILLS}}` | Skills / Competencias |
-| `{{SKILLS}}` | HTML de skills |
+Campos esperados en `/tmp/cv-candidate-{company}.json`:
+
+| Campo | Contenido |
+|-------|-----------|
+| `meta.company` | Empresa |
+| `meta.role` | Rol |
+| `meta.paper_size` | `letter` o `a4` |
+| `meta.source_jd` | URL o ruta del JD |
+| `meta.source_report` | Ruta del report |
+| `summary` | Summary personalizado con keywords |
+| `core_competencies` | 6-8 capability phrases |
+| `experience` | Roles con bullets reordenados |
+| `projects` | Top 0-4 personal/side/open-source projects from cv.md Projects section. Empty array `[]` if none exist — NEVER extract from work experience |
+| `education` | Solo override si hace falta |
+| `certifications` | Solo override si hace falta |
+| `skills` | Lista final de skills para esta oferta |
+
+El renderer Typst vive en `templates/cv.typ` y sus módulos en `templates/cv/*.typ`. Reusar el diseño existente; no recrearlo desde cero.
 
 ## Canva CV Generation (optional)
 
