@@ -14,6 +14,7 @@ const defaultFormat = 'letter';
 const fallbackCvPath = join(projectRoot, 'cv.md');
 const fontPath = join(projectRoot, 'fonts');
 const typstFontAssets = ['dm-sans-latin.woff2', 'space-grotesk-latin.woff2'];
+const outputDir = join(projectRoot, 'output');
 
 function usage() {
   console.error('Usage: node generate-pdf.mjs <source.(md|json)> [output.pdf] [--payload=override.json] [--template=templates/cv.typ] [--format=letter|a4] [--keep-temp]');
@@ -674,6 +675,19 @@ async function writeTempPayload(payload) {
   return { tempDir, payloadPath };
 }
 
+function maybeCollectTransientJson(jsonPath, pdfPath) {
+  if (!jsonPath) return null;
+  if (extname(jsonPath).toLowerCase() !== '.json') return null;
+  if (!existsSync(jsonPath)) return null;
+  const resolvedJson = resolve(jsonPath);
+  const resolvedPdf = resolve(pdfPath);
+  if (!resolvedJson.startsWith(`${outputDir}/`)) return null;
+  const jsonStem = resolvedJson.slice(0, -5);
+  const pdfStem = extname(resolvedPdf).toLowerCase() === '.pdf' ? resolvedPdf.slice(0, -4) : resolvedPdf;
+  if (jsonStem !== pdfStem) return null;
+  return resolvedJson;
+}
+
 async function prepareTempFonts(tempDir) {
   for (const file of typstFontAssets) {
     const source = join(fontPath, file);
@@ -727,7 +741,13 @@ async function main() {
   args.outputPath = await resolveOutputPath(args.outputPath, data, args.sourcePath);
   console.log(`📁 Output:   ${args.outputPath}`);
 
+  const transientJsonPaths = Array.from(new Set([
+    maybeCollectTransientJson(args.sourcePath, args.outputPath),
+    maybeCollectTransientJson(args.payloadPath, args.outputPath),
+  ].filter(Boolean)));
+
   const { tempDir, payloadPath } = await writeTempPayload(data);
+  let compiled = false;
   try {
     await prepareTempFonts(tempDir);
     await mkdir(dirname(args.outputPath), { recursive: true });
@@ -737,12 +757,16 @@ async function main() {
     if (result.status !== 0) {
       throw new Error(`typst compile failed with exit code ${result.status ?? 'unknown'}`);
     }
+    compiled = true;
     const pageCount = countPdfPages(args.outputPath);
     const { size } = await stat(args.outputPath);
     console.log(`✅ PDF generated: ${args.outputPath}`);
     console.log(`📊 Pages: ${pageCount}`);
     console.log(`📦 Size: ${(size / 1024).toFixed(1)} KB`);
   } finally {
+    if (compiled && !args.keepTemp) {
+      await Promise.all(transientJsonPaths.map((pathname) => rm(pathname, { force: true })));
+    }
     if (!args.keepTemp) {
       await rm(tempDir, { recursive: true, force: true });
     } else {

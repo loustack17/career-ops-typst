@@ -18,6 +18,7 @@
 12. Construye un payload temporal con overrides del CV para esta oferta
 13. Escribe el payload a `/tmp/cv-candidate-{company}.json`
 14. Ejecuta: `node generate-pdf.mjs cv.md output/cv-candidate-{company}-{YYYY-MM-DD}.pdf --payload=/tmp/cv-candidate-{company}.json --format={letter|a4}`
+15. Si por cualquier motivo se generó un `.json` temporal dentro de `output/`, eliminarlo al terminar. `output/` debe contener el PDF final, no payloads temporales.
 15. Reporta: ruta del PDF, nº páginas, % cobertura de keywords
 
 ## Reglas ATS (parseo limpio)
@@ -63,6 +64,7 @@ Ejemplos de reformulación legítima:
 ## Payload temporal para Typst
 
 Usar `cv.md` como source of truth y generar solo un payload temporal con overrides para esta oferta. No generar HTML completo ni un documento Typst completo.
+No guardar payloads JSON en `output/`.
 
 Campos esperados en `/tmp/cv-candidate-{company}.json`:
 

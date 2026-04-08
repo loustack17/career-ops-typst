@@ -281,6 +281,7 @@ node generate-pdf.mjs \
 | `skills` | Skills finales |
 
 No generes HTML completo ni un documento Typst completo. Genera solo el payload temporal y deja que `generate-pdf.mjs` compile el diseño existente.
+No guardes payloads JSON en `output/`. `output/` es solo para PDFs finales.
 
 ### Paso 5 — Tracker Line
 
