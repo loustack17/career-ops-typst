@@ -12,6 +12,7 @@ const projectRoot = __dirname;
 const defaultTemplate = join(projectRoot, 'templates', 'cv.typ');
 const defaultFormat = 'letter';
 const fallbackCvPath = join(projectRoot, 'cv.md');
+const profilePath = join(projectRoot, 'config', 'profile.yml');
 const fontPath = join(projectRoot, 'fonts');
 const typstFontAssets = ['dm-sans-latin.woff2', 'space-grotesk-latin.woff2'];
 const outputDir = join(projectRoot, 'output');
@@ -96,12 +97,41 @@ function todayString() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function unquoteYamlValue(value) {
+  return String(value || '').trim().replace(/^['"]|['"]$/g, '').trim();
+}
+
+function readProfileCandidateName() {
+  if (!existsSync(profilePath)) return '';
+  const lines = readFileSync(profilePath, 'utf8').split(/\r?\n/);
+  let inCandidate = false;
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\s+#.*$/, '');
+    if (!line.trim()) continue;
+    const topLevel = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (topLevel) {
+      inCandidate = topLevel[1] === 'candidate';
+      if ((topLevel[1] === 'name' || topLevel[1] === 'full_name') && topLevel[2]) {
+        return unquoteYamlValue(topLevel[2]);
+      }
+      continue;
+    }
+    if (!inCandidate) continue;
+    const nested = line.match(/^\s+([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (!nested) continue;
+    if ((nested[1] === 'full_name' || nested[1] === 'name') && nested[2]) {
+      return unquoteYamlValue(nested[2]);
+    }
+  }
+  return '';
+}
+
 function defaultOutputFilename(data, sourcePath) {
+  const candidateSlug = slugify(readProfileCandidateName() || data?.meta?.candidate_name || data?.identity?.full_name);
   const companySlug = slugify(data?.meta?.company);
   if (companySlug) {
-    return `cv-candidate-${companySlug}-${todayString()}.pdf`;
+    return `cv-${candidateSlug || 'candidate'}-${companySlug}-${todayString()}.pdf`;
   }
-  const candidateSlug = slugify(data?.meta?.candidate_name || data?.identity?.full_name);
   if (candidateSlug) {
     return `cv-${candidateSlug}.pdf`;
   }
