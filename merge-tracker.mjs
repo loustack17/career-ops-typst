@@ -282,7 +282,8 @@ for (const file of tsvFiles) {
 
   // Check for duplicate by:
   // 1. Exact report number match
-  // 2. Company + role fuzzy match
+  // 2. Exact entry number match
+  // 3. Company + role fuzzy match only when there is no unique report number
   const reportNum = extractReportNum(addition.report);
   let duplicate = null;
 
@@ -299,7 +300,7 @@ for (const file of tsvFiles) {
     duplicate = existingApps.find(app => app.num === addition.num);
   }
 
-  if (!duplicate) {
+  if (!duplicate && !reportNum) {
     // Company + role fuzzy match
     const normCompany = normalizeCompany(addition.company);
     duplicate = existingApps.find(app => {

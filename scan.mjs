@@ -3,7 +3,7 @@
 /**
  * scan.mjs — Zero-token portal scanner
  *
- * Fetches Greenhouse, Ashby, and Lever APIs directly, applies title
+ * Fetches Greenhouse, Ashby, Lever, Workday, and SmartRecruiters APIs directly, applies title
  * filters from portals.yml, deduplicates against existing history,
  * and appends new offers to pipeline.md + scan-history.tsv.
  *
@@ -69,6 +69,33 @@ function detectApi(company) {
     };
   }
 
+  try {
+    const parsed = new URL(url);
+
+    const workdayHostMatch = parsed.hostname.match(/^([^.]+)\.wd\d+\.myworkdayjobs\.com$/);
+    const workdaySiteId = parsed.pathname.split('/').filter(Boolean)[0];
+    if (workdayHostMatch && workdaySiteId) {
+      return {
+        type: 'workday',
+        tenant: workdayHostMatch[1],
+        siteId: workdaySiteId,
+        origin: parsed.origin,
+        baseUrl: `${parsed.origin}/${workdaySiteId}`,
+        url: `${parsed.origin}/wday/cxs/${workdayHostMatch[1]}/${workdaySiteId}/jobs`,
+      };
+    }
+
+    const smartRecruitersHost = parsed.hostname.match(/(?:^|\.)smartrecruiters\.com$/);
+    const smartRecruitersCompany = parsed.pathname.split('/').filter(Boolean)[0];
+    if (smartRecruitersHost && smartRecruitersCompany) {
+      return {
+        type: 'smartrecruiters',
+        companyId: smartRecruitersCompany,
+        url: `https://api.smartrecruiters.com/v1/companies/${smartRecruitersCompany}/postings`,
+      };
+    }
+  } catch {}
+
   return null;
 }
 
@@ -104,20 +131,108 @@ function parseLever(json, companyName) {
   }));
 }
 
-const PARSERS = { greenhouse: parseGreenhouse, ashby: parseAshby, lever: parseLever };
+function formatLocation(parts) {
+  return parts.filter(Boolean).join(', ');
+}
+
+function parseWorkday(json, companyName, api) {
+  const jobs = json.jobPostings || [];
+  return jobs.map(j => ({
+    title: j.title || '',
+    url: j.externalPath ? new URL(j.externalPath, `${api.baseUrl}/`).toString() : '',
+    company: companyName,
+    location: j.locationsText || j.location || '',
+  }));
+}
+
+function parseSmartRecruiters(json, companyName) {
+  const jobs = json.content || [];
+  return jobs.map(j => ({
+    title: j.name || '',
+    url: j.ref ? `https://jobs.smartrecruiters.com/${json.companyId || j.company?.identifier || companyName}/${j.ref}` : j.jobAd?.sections?.jobDescription?.url || '',
+    company: companyName,
+    location: formatLocation([
+      j.location?.city,
+      j.location?.region,
+      j.location?.country,
+    ]),
+  }));
+}
+
+const PARSERS = {
+  greenhouse: parseGreenhouse,
+  ashby: parseAshby,
+  lever: parseLever,
+  workday: parseWorkday,
+  smartrecruiters: parseSmartRecruiters,
+};
 
 // ── Fetch with timeout ──────────────────────────────────────────────
 
-async function fetchJson(url) {
+async function fetchJson(url, init = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { ...init, signal: controller.signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function fetchWorkday(api) {
+  const limit = 20;
+  let offset = 0;
+  let total = Infinity;
+  const jobPostings = [];
+
+  while (offset < total) {
+    const json = await fetchJson(api.url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        appliedFacets: {},
+        limit,
+        offset,
+        searchText: '',
+      }),
+    });
+
+    total = Number(json.total || 0);
+    jobPostings.push(...(json.jobPostings || []));
+    offset += limit;
+    if ((json.jobPostings || []).length === 0) break;
+  }
+
+  return { ...api, jobPostings };
+}
+
+async function fetchSmartRecruiters(api) {
+  const limit = 100;
+  let offset = 0;
+  let total = Infinity;
+  const content = [];
+
+  while (offset < total) {
+    const json = await fetchJson(`${api.url}?limit=${limit}&offset=${offset}`);
+    total = Number(json.totalFound || 0);
+    content.push(...(json.content || []));
+    offset += limit;
+    if ((json.content || []).length === 0) break;
+  }
+
+  return { ...api, content };
+}
+
+async function fetchApi(api) {
+  if (api.type === 'workday') return fetchWorkday(api);
+  if (api.type === 'smartrecruiters') return fetchSmartRecruiters(api);
+  return fetchJson(api.url);
 }
 
 // ── Title filter ────────────────────────────────────────────────────
@@ -290,10 +405,10 @@ async function main() {
   const errors = [];
 
   const tasks = targets.map(company => async () => {
-    const { type, url } = company._api;
+    const { type } = company._api;
     try {
-      const json = await fetchJson(url);
-      const jobs = PARSERS[type](json, company.name);
+      const json = await fetchApi(company._api);
+      const jobs = PARSERS[type](json, company.name, company._api);
       totalFound += jobs.length;
 
       for (const job of jobs) {
