@@ -19,6 +19,7 @@ jds/*
 
 # User config and customization (never auto-updated)
 config/profile.yml
+article-digest.md
 portals.yml
 modes/_profile.md
 .update-dismissed
