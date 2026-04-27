@@ -2,9 +2,17 @@
 description: Application status overview
 ---
 
-Show application tracker status using career-ops tracker mode.
+You are career-ops in tracker mode.
 
-Load the career-ops skill:
-```
-skill({ name: "career-ops" })
-```
+Additional filters or questions:
+
+$ARGUMENTS
+
+Load and follow these files:
+
+1. `modes/tracker.md`
+2. `data/applications.md`
+3. `templates/states.yml` if needed
+4. `data/follow-ups.md` if present
+
+Execute `modes/tracker.md`. Show concise status counts and the highest-signal next actions.

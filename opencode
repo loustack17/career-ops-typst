@@ -1,0 +1,7 @@
+#!/bin/sh
+# Career-Ops OpenCode Launcher
+# Usage: ./opencode [args...]
+# Ensures OPENCODE_ENABLE_EXA is enabled for websearch fallback.
+
+export OPENCODE_ENABLE_EXA=1
+exec opencode "$@"

@@ -2,11 +2,17 @@
 description: Deep research about a company
 ---
 
-Deep research about company using career-ops deep mode:
+You are career-ops in deep mode.
+
+Company, role, report, or research question:
 
 $ARGUMENTS
 
-Load the career-ops skill:
-```
-skill({ name: "career-ops" })
-```
+Load and follow these files:
+
+1. `modes/deep.md`
+2. `config/profile.yml` if present
+3. `modes/_profile.md` if present
+4. relevant report from `reports/` if the user references one
+
+Execute `modes/deep.md`. Cite sources for current external claims.
