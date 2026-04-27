@@ -1,7 +1,10 @@
 package screens
 
 import (
+	"strings"
 	"testing"
+
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/santifer/career-ops/dashboard/internal/theme"
 )
@@ -31,5 +34,54 @@ func TestRenderInlineElementsLeavesTrailingPunctuationUnstyled(t *testing.T) {
 
 	if match != "https://example.com" {
 		t.Fatalf("expected URL match without trailing period, got %q", match)
+	}
+}
+
+func TestViewerWrapsFencedCodeLines(t *testing.T) {
+	m := ViewerModel{
+		lines: []string{
+			"```",
+			strings.Repeat("x", 40),
+			"```",
+		},
+		width:  20,
+		height: 20,
+		theme:  theme.NewTheme("catppuccin-mocha"),
+	}
+
+	rendered := m.renderAll()
+	maxWidth := m.width - 6
+	if maxWidth < 10 {
+		maxWidth = 10
+	}
+
+	if len(rendered) < 2 {
+		t.Fatalf("expected fenced code to wrap into multiple lines, got %d", len(rendered))
+	}
+	for _, line := range rendered {
+		if width := ansi.StringWidth(line); width > maxWidth {
+			t.Fatalf("expected fenced code line width <= %d, got %d for %q", maxWidth, width, ansi.Strip(line))
+		}
+	}
+}
+
+func TestViewerRendersInlineMarkdownBeforeParagraphWrapping(t *testing.T) {
+	m := ViewerModel{
+		lines: []string{
+			"See [documentation](https://example.com/really-long-path) before continuing.",
+		},
+		width:  30,
+		height: 20,
+		theme:  theme.NewTheme("catppuccin-mocha"),
+	}
+
+	rendered := strings.Join(m.renderAll(), "\n")
+	plain := ansi.Strip(rendered)
+
+	if strings.Contains(plain, "[") || strings.Contains(plain, "](") || strings.Contains(plain, ")") {
+		t.Fatalf("expected rendered paragraph to hide markdown link syntax, got %q", plain)
+	}
+	if !strings.Contains(plain, "documentation") {
+		t.Fatalf("expected rendered paragraph to keep link text, got %q", plain)
 	}
 }

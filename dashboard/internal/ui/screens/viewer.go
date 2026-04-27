@@ -247,8 +247,14 @@ func (m ViewerModel) renderAll() []string {
 				i++
 			}
 			codeStyle := lipgloss.NewStyle().Background(m.theme.Surface).Foreground(m.theme.Text)
+			w := m.width - 6
+			if w < 10 {
+				w = 10
+			}
 			for _, cl := range codeLines {
-				styled = append(styled, codeStyle.Render("  "+cl))
+				for _, wl := range strings.Split(ansi.Wrap("  "+cl, w, ""), "\n") {
+					styled = append(styled, codeStyle.Render(wl))
+				}
 			}
 			continue
 		}
@@ -274,10 +280,9 @@ func (m ViewerModel) renderAll() []string {
 			if w < 10 {
 				w = 10
 			}
-			wrapped := m.wrapParagraph(para, w)
-			paraStyle := lipgloss.NewStyle().Foreground(m.theme.Subtext)
+			wrapped := m.wrapParagraph(m.renderInlineElements(para), w)
 			for _, wl := range wrapped {
-				styled = append(styled, paraStyle.Render(m.renderInlineElements(wl)))
+				styled = append(styled, wl)
 			}
 		}
 	}
