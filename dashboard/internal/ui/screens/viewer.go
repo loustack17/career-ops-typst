@@ -47,6 +47,20 @@ func NewViewerModel(t theme.Theme, path, title string, width, height int) Viewer
 // rebuildRender recomputes renderedLines from raw lines using the current width.
 func (m *ViewerModel) rebuildRender() {
 	m.renderedLines = m.renderAll()
+	m.clampScrollOffset()
+}
+
+func (m *ViewerModel) clampScrollOffset() {
+	maxScroll := len(m.renderedLines) - m.bodyHeight()
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if m.scrollOffset > maxScroll {
+		m.scrollOffset = maxScroll
+	}
+	if m.scrollOffset < 0 {
+		m.scrollOffset = 0
+	}
 }
 
 func (m ViewerModel) Init() tea.Cmd {
@@ -145,35 +159,6 @@ func (m ViewerModel) renderHeader() string {
 	title := lipgloss.NewStyle().Bold(true).Foreground(m.theme.Blue).Render(m.title)
 
 	right := lipgloss.NewStyle().Foreground(m.theme.Subtext)
-	pos := right.Render(strings.TrimRight(
-		strings.Repeat(" ", max(0, m.width-lipgloss.Width(m.title)-30)),
-		" ",
-	))
-
-	lineInfo := right.Render(
-		strings.Join([]string{
-			"L",
-			strings.TrimSpace(lipgloss.NewStyle().Render(
-				strings.Join([]string{
-					func() string {
-						s := m.scrollOffset + 1
-						if s > len(m.lines) {
-							s = len(m.lines)
-						}
-						return string(rune('0'+s/100%10)) + string(rune('0'+s/10%10)) + string(rune('0'+s%10))
-					}(),
-				}, ""),
-			)),
-			"/",
-			func() string {
-				t := len(m.lines)
-				return string(rune('0'+t/100%10)) + string(rune('0'+t/10%10)) + string(rune('0'+t%10))
-			}(),
-		}, ""),
-	)
-	_ = pos
-	_ = lineInfo
-
 	scroll := right.Render(func() string {
 		if len(m.renderedLines) == 0 {
 			return ""
@@ -218,15 +203,8 @@ func (m ViewerModel) renderBody() string {
 	}
 	visible := m.renderedLines[m.scrollOffset:end]
 
-	flat := make([]string, len(visible))
+	flat := make([]string, bh)
 	copy(flat, visible)
-
-	if len(flat) > bh {
-		flat = flat[:bh]
-	}
-	for len(flat) < bh {
-		flat = append(flat, "")
-	}
 
 	return padStyle.Render(strings.Join(flat, "\n"))
 }
@@ -269,8 +247,14 @@ func (m ViewerModel) renderAll() []string {
 				i++
 			}
 			codeStyle := lipgloss.NewStyle().Background(m.theme.Surface).Foreground(m.theme.Text)
+			w := m.width - 6
+			if w < 10 {
+				w = 10
+			}
 			for _, cl := range codeLines {
-				styled = append(styled, codeStyle.Render("  "+cl))
+				for _, wl := range strings.Split(ansi.Wrap("  "+cl, w, ""), "\n") {
+					styled = append(styled, codeStyle.Render(wl))
+				}
 			}
 			continue
 		}
@@ -296,10 +280,9 @@ func (m ViewerModel) renderAll() []string {
 			if w < 10 {
 				w = 10
 			}
-			wrapped := m.wrapParagraph(para, w)
-			paraStyle := lipgloss.NewStyle().Foreground(m.theme.Subtext)
+			wrapped := m.wrapParagraph(m.renderInlineElements(para), w)
 			for _, wl := range wrapped {
-				styled = append(styled, paraStyle.Render(m.renderInlineElements(wl)))
+				styled = append(styled, wl)
 			}
 		}
 	}
@@ -528,7 +511,7 @@ func (m ViewerModel) renderTableBlock(lines []string, colWidths []int) []string 
 var (
 	reBold       = regexp.MustCompile(`\*\*([^*]+)\*\*`)
 	reLink       = regexp.MustCompile(`\[([^\]]+)\]\(([^)]+)\)`)
-	reBareURL    = regexp.MustCompile(`https?://\S+`)
+	reBareURL    = regexp.MustCompile(`https?://\S*[^\s\)\]\.,;:!?]`)
 	reInlineCode = regexp.MustCompile("`([^`]+)`")
 	reListNumber = regexp.MustCompile(`^(\s*\d+\.\s+)(.*)$`)
 )
@@ -634,8 +617,17 @@ func (m ViewerModel) styleLine(line string) string {
 	if strings.HasPrefix(trimmed, "> ") {
 		content := strings.TrimPrefix(trimmed, "> ")
 		border := lipgloss.NewStyle().Foreground(m.theme.Overlay).Render("▎ ")
-		text := lipgloss.NewStyle().Foreground(m.theme.Subtext).Italic(true).Width(w - 2).Render(content)
-		return border + text
+		textStyle := lipgloss.NewStyle().Foreground(m.theme.Subtext).Italic(true)
+		wrapped := strings.Split(ansi.Wrap(textStyle.Render(content), w-2, ""), "\n")
+		result := make([]string, 0, len(wrapped))
+		for i, line := range wrapped {
+			if i == 0 {
+				result = append(result, border+line)
+			} else {
+				result = append(result, strings.Repeat(" ", ansi.StringWidth(border))+line)
+			}
+		}
+		return strings.Join(result, "\n")
 	}
 	if strings.HasPrefix(trimmed, "**") && strings.Contains(trimmed, ":**") {
 		styled := m.renderInlineElements(line)
