@@ -396,6 +396,7 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 				rightPad := padTotal - leftPad
 				headerLine := lipgloss.NewStyle().Bold(true).Foreground(m.theme.Blue).Render(numHeader)
 				result = append(result, borderL+strings.Repeat(" ", leftPad)+headerLine+strings.Repeat(" ", rightPad)+borderR)
+				result = append(result, midBorder)
 			}
 		}
 
