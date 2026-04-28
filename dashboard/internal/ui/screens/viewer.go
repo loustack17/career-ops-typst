@@ -235,8 +235,11 @@ func (m ViewerModel) renderAll() []string {
 			}
 			tableLines := m.lines[tableStart:i]
 			colWidths := computeColumnWidths(tableLines, m.width-6)
-			rendered := m.renderTableBlock(tableLines, colWidths)
-			styled = append(styled, rendered...)
+			if shouldUseCardMode(tableLines, colWidths) {
+				styled = append(styled, m.renderCardTable(tableLines)...)
+			} else {
+				styled = append(styled, m.renderTableBlock(tableLines, colWidths)...)
+			}
 			continue
 		}
 
@@ -304,6 +307,92 @@ func (m ViewerModel) renderAll() []string {
 }
 
 // isTableLine checks if a line is part of a markdown table.
+func shouldUseCardMode(lines []string, colWidths []int) bool {
+	if len(colWidths) <= 4 {
+		return false
+	}
+	shrinkCount := 0
+	for _, w := range colWidths {
+		if w < 12 {
+			shrinkCount++
+		}
+	}
+	return shrinkCount >= 3
+}
+
+func (m ViewerModel) renderCardTable(lines []string) []string {
+	if len(lines) == 0 {
+		return nil
+	}
+
+	var dataLines []string
+	var headerCells []string
+	for _, line := range lines {
+		cells := parseTableCells(line)
+		if isTableSeparator(line) {
+			continue
+		}
+		if headerCells == nil {
+			headerCells = cells
+			continue
+		}
+		dataLines = append(dataLines, line)
+	}
+
+	if headerCells == nil {
+		return m.renderTableBlock(lines, computeColumnWidths(lines, m.width-6))
+	}
+
+	w := m.width - 6
+	if w < 10 {
+		w = 10
+	}
+
+	borderStyle := lipgloss.NewStyle().Foreground(m.theme.Overlay)
+	labelStyle := lipgloss.NewStyle().Foreground(m.theme.Sky).Bold(true).Width(16)
+	valueStyle := lipgloss.NewStyle().Foreground(m.theme.Text)
+	tw := w - 18
+	if tw < 10 {
+		tw = 10
+	}
+
+	var result []string
+	topBorder := borderStyle.Render("┌" + strings.Repeat("─", w) + "┐")
+	botBorder := borderStyle.Render("└" + strings.Repeat("─", w) + "┘")
+	midBorder := borderStyle.Render("├" + strings.Repeat("─", w) + "┤")
+
+	for ri, line := range dataLines {
+		cells := parseTableCells(line)
+		result = append(result, topBorder)
+
+		for ci := 0; ci < len(headerCells) && ci < len(cells); ci++ {
+			label := truncateRunes(headerCells[ci], 15)
+			content := strings.TrimSpace(cells[ci])
+			if content == "" {
+				continue
+			}
+
+			wrapped := ansi.Wrap(content, tw, "")
+			wrapLines := strings.Split(wrapped, "\n")
+			for wi, wl := range wrapLines {
+				if wi == 0 {
+					result = append(result, " "+labelStyle.Render(label+":")+" "+valueStyle.Render(wl))
+				} else {
+					result = append(result, " "+labelStyle.Render(strings.Repeat(" ", 16))+" "+valueStyle.Render(wl))
+				}
+			}
+		}
+
+		if ri < len(dataLines)-1 {
+			result = append(result, midBorder)
+		} else {
+			result = append(result, botBorder)
+		}
+	}
+
+	return result
+}
+
 func isTableLine(line string) bool {
 	trimmed := strings.TrimSpace(line)
 	return len(trimmed) > 1 && trimmed[0] == '|'
@@ -372,6 +461,19 @@ func computeColumnWidths(lines []string, maxTotal int) []int {
 	for i := range widths {
 		if widths[i] < 3 {
 			widths[i] = 3
+		}
+	}
+
+	maxColW := 40
+	if maxCols > 5 {
+		maxColW = 30
+	}
+	if maxCols > 7 {
+		maxColW = 25
+	}
+	for i := range widths {
+		if widths[i] > maxColW {
+			widths[i] = maxColW
 		}
 	}
 
