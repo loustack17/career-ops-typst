@@ -343,7 +343,7 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 		return m.renderTableBlock(lines, computeColumnWidths(lines, m.width-6))
 	}
 
-	w := m.width - 6
+	w := m.width - 8
 	if w < 10 {
 		w = 10
 	}
