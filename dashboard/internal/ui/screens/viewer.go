@@ -356,20 +356,45 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 		tw = 10
 	}
 
-	var result []string
 	topBorder := borderStyle.Render("┌" + strings.Repeat("─", w) + "┐")
 	botBorder := borderStyle.Render("└" + strings.Repeat("─", w) + "┘")
 	midBorder := borderStyle.Render("├" + strings.Repeat("─", w) + "┤")
 
-	for ri, line := range dataLines {
-		cells := parseTableCells(line)
-		result = append(result, topBorder)
+	var displayHeaders []string
+	var displayIndexes []int
+	for i, h := range headerCells {
+		if strings.TrimSpace(h) == "#" {
+			continue
+		}
+		displayHeaders = append(displayHeaders, h)
+		displayIndexes = append(displayIndexes, i)
+	}
 
-		for ci := 0; ci < len(headerCells) && ci < len(cells); ci++ {
-			label := truncateRunes(headerCells[ci], 15)
+	var result []string
+	firstField := true
+
+	for _, line := range dataLines {
+		cells := parseTableCells(line)
+		prevIsStar := false
+
+		for di, hi := range displayHeaders {
+			ci := displayIndexes[di]
+			if ci >= len(cells) {
+				continue
+			}
 			content := strings.TrimSpace(cells[ci])
 			if content == "" {
 				continue
+			}
+
+			label := truncateRunes(hi, 15)
+			isStar := label == "S" || label == "T" || label == "A" || label == "R"
+
+			if firstField {
+				result = append(result, topBorder)
+				firstField = false
+			} else if !(isStar && prevIsStar) {
+				result = append(result, midBorder)
 			}
 
 			wrapped := ansi.Wrap(content, tw, "")
@@ -381,15 +406,12 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 					result = append(result, " "+labelStyle.Render(strings.Repeat(" ", 16))+" "+valueStyle.Render(wl))
 				}
 			}
-		}
 
-		if ri < len(dataLines)-1 {
-			result = append(result, midBorder)
-		} else {
-			result = append(result, botBorder)
+			prevIsStar = isStar
 		}
 	}
 
+	result = append(result, botBorder)
 	return result
 }
 
