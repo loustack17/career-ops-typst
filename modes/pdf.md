@@ -1,90 +1,90 @@
-# Modo: pdf — Generación de PDF ATS-Optimizado
+# Mode: pdf — ATS-Optimized PDF Generation
 
-## Pipeline completo
+## Full pipeline
 
-1. Lee `cv.md` como fuentes de verdad
-2. Pide al usuario el JD si no está en contexto (texto o URL)
-3. Extrae 15-20 keywords del JD
-4. Detecta idioma del JD → idioma del CV (EN default)
-5. Detecta ubicación empresa → formato papel:
+1. Read `cv.md` as source of truth
+2. Ask the user for the JD if not in context (text or URL)
+3. Extract 15-20 keywords from the JD
+4. Detect JD language → CV language (EN default)
+5. Detect company location → paper format:
    - US/Canada → `letter`
-   - Resto del mundo → `a4`
-6. Detecta arquetipo del rol → adapta framing
-7. Reescribe Professional Summary inyectando keywords del JD + exit narrative bridge ("Built and sold a business. Now applying systems thinking to [domain del JD].")
+   - Rest of world → `a4`
+6. Detect role archetype → adapt framing
+7. Rewrite Professional Summary injecting JD keywords + exit narrative bridge ("Built and sold a business. Now applying systems thinking to [JD domain].")
 8. If cv.md has a dedicated Projects section with personal/side/open-source projects, select top 3-4 most relevant for the offer. If no such section exists, leave `projects` as an empty array — NEVER synthesize projects from paid work experience
-9. Reordena bullets de experiencia por relevancia al JD
-10. Construye competency grid desde requisitos del JD (6-8 keyword phrases)
-11. Inyecta keywords naturalmente en logros existentes (NUNCA inventa)
-12. Construye un payload temporal con overrides del CV para esta oferta
-13. Lee `candidate.full_name` de `config/profile.yml` → normaliza a kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
-14. Escribe el payload a `/tmp/cv-{candidate}-{company}.json`
-15. Ejecuta: `node generate-pdf.mjs cv.md output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --payload=/tmp/cv-{candidate}-{company}.json --format={letter|a4}`
-16. Si por cualquier motivo se generó un `.json` temporal dentro de `output/`, eliminarlo al terminar. `output/` debe contener el PDF final, no payloads temporales.
-17. Reporta: ruta del PDF, nº páginas, % cobertura de keywords
+9. Reorder experience bullets by JD relevance
+10. Build competency grid from JD requirements (6-8 keyword phrases)
+11. Inject keywords naturally into existing achievements (NEVER invent)
+12. Build a temporary payload with CV overrides for this offer
+13. Read `candidate.full_name` from `config/profile.yml` → normalize to kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
+14. Write payload to `/tmp/cv-{candidate}-{company}.json`
+15. Run: `node generate-pdf.mjs cv.md output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --payload=/tmp/cv-{candidate}-{company}.json --format={letter|a4}`
+16. If for any reason a temporary `.json` was generated inside `output/`, delete it when done. `output/` must contain the final PDF, not temporary payloads.
+17. Report: PDF path, page count, % keyword coverage
 
-## Reglas ATS (parseo limpio)
+## ATS Rules (clean parsing)
 
-- Layout single-column (sin sidebars, sin columnas paralelas)
-- Headers estándar: "Professional Summary", "Work Experience", "Education", "Skills", "Certifications", "Projects"
-- Sin texto en imágenes/SVGs
-- Sin info crítica en headers/footers del PDF (ATS los ignora)
-- UTF-8, texto seleccionable (no rasterizado)
-- Sin tablas anidadas
-- Keywords del JD distribuidas: Summary (top 5), primer bullet de cada rol, Skills section
+- Single-column layout (no sidebars, no parallel columns)
+- Standard headers: "Professional Summary", "Work Experience", "Education", "Skills", "Certifications", "Projects"
+- No text in images/SVGs
+- No critical info in PDF headers/footers (ATS ignores them)
+- UTF-8, selectable text (not rasterized)
+- No nested tables
+- JD keywords distributed: Summary (top 5), first bullet of each role, Skills section
 
-## Diseño del PDF
+## PDF Design
 
-- **Renderer**: Typst template modular (`templates/cv.typ` + `templates/cv/*.typ`)
+- **Renderer**: Modular Typst template (`templates/cv.typ` + `templates/cv/*.typ`)
 - **Fonts**: heading/body fonts chosen by the template, matching the active CV design as closely as possible
-- **Header**: nombre en Space Grotesk 24px bold + línea gradiente `linear-gradient(to right, hsl(187,74%,32%), hsl(270,70%,45%))` 2px + fila de contacto
+- **Header**: name in Space Grotesk 24px bold + gradient line `linear-gradient(to right, hsl(187,74%,32%), hsl(270,70%,45%))` 2px + contact row
 - **Section headers**: Space Grotesk 13px, uppercase, letter-spacing 0.05em, color cyan primary
 - **Body**: DM Sans 11px, line-height 1.5
 - **Company names**: color accent purple `hsl(270,70%,45%)`
-- **Márgenes**: 0.45in top/bottom, 0.5in left/right
-- **Background**: blanco puro
+- **Margins**: 0.45in top/bottom, 0.5in left/right
+- **Background**: pure white
 
-## Orden de secciones (optimizado "6-second recruiter scan")
+## Section order (optimized "6-second recruiter scan")
 
-1. Header (nombre grande, gradiente, contacto, link portfolio)
-2. Professional Summary (3-4 líneas, keyword-dense)
-3. Core Competencies (6-8 keyword phrases en flex-grid)
-4. Work Experience (cronológico inverso)
+1. Header (large name, gradient, contact, portfolio link)
+2. Professional Summary (3-4 lines, keyword-dense)
+3. Core Competencies (6-8 keyword phrases in flex-grid)
+4. Work Experience (reverse chronological)
 5. Projects (only if cv.md has a dedicated Projects section; omit otherwise)
 6. Education & Certifications
-7. Skills (idiomas + técnicos)
+7. Skills (languages + technical)
 
-## Estrategia de keyword injection (ético, basado en verdad)
+## Keyword injection strategy (ethical, truth-based)
 
-Ejemplos de reformulación legítima:
-- JD dice "RAG pipelines" y CV dice "LLM workflows with retrieval" → cambiar a "RAG pipeline design and LLM orchestration workflows"
-- JD dice "MLOps" y CV dice "observability, evals, error handling" → cambiar a "MLOps and observability: evals, error handling, cost monitoring"
-- JD dice "stakeholder management" y CV dice "collaborated with team" → cambiar a "stakeholder management across engineering, operations, and business"
+Examples of legitimate rewording:
+- JD says "RAG pipelines" and CV says "LLM workflows with retrieval" → change to "RAG pipeline design and LLM orchestration workflows"
+- JD says "MLOps" and CV says "observability, evals, error handling" → change to "MLOps and observability: evals, error handling, cost monitoring"
+- JD says "stakeholder management" and CV says "collaborated with team" → change to "stakeholder management across engineering, operations, and business"
 
-**NUNCA añadir skills que el candidato no tiene. Solo reformular experiencia real con el vocabulario exacto del JD.**
+**NEVER add skills the candidate does not have. Only rephrase real experience using the exact vocabulary from the JD.**
 
-## Payload temporal para Typst
+## Temporary payload for Typst
 
-Usar `cv.md` como source of truth y generar solo un payload temporal con overrides para esta oferta. No generar HTML completo ni un documento Typst completo.
-No guardar payloads JSON en `output/`.
+Use `cv.md` as source of truth and generate only a temporary payload with overrides for this offer. Do not generate full HTML or a full Typst document.
+Do not save JSON payloads in `output/`.
 
-Campos esperados en `/tmp/cv-{candidate}-{company}.json`:
+Expected fields in `/tmp/cv-{candidate}-{company}.json`:
 
-| Campo | Contenido |
-|-------|-----------|
-| `meta.company` | Empresa |
-| `meta.role` | Rol |
-| `meta.paper_size` | `letter` o `a4` |
-| `meta.source_jd` | URL o ruta del JD |
-| `meta.source_report` | Ruta del report |
-| `summary` | Summary personalizado con keywords |
+| Field | Content |
+|-------|---------|
+| `meta.company` | Company |
+| `meta.role` | Role |
+| `meta.paper_size` | `letter` or `a4` |
+| `meta.source_jd` | JD URL or path |
+| `meta.source_report` | Report path |
+| `summary` | Custom summary with keywords |
 | `core_competencies` | 6-8 capability phrases |
-| `experience` | Roles con bullets reordenados |
+| `experience` | Roles with reordered bullets |
 | `projects` | Top 0-4 personal/side/open-source projects from cv.md Projects section. Empty array `[]` if none exist — NEVER extract from work experience |
-| `education` | Solo override si hace falta |
-| `certifications` | Solo override si hace falta |
-| `skills` | Lista final de skills para esta oferta |
+| `education` | Override only if needed |
+| `certifications` | Override only if needed |
+| `skills` | Final skill list for this offer |
 
-El renderer Typst vive en `templates/cv.typ` y sus módulos en `templates/cv/*.typ`. Reusar el diseño existente; no recrearlo desde cero.
+The Typst renderer lives in `templates/cv.typ` and its modules in `templates/cv/*.typ`. Reuse the existing design; do not recreate it from scratch.
 
 ## Canva CV Generation (optional)
 
@@ -168,6 +168,6 @@ d. Report: PDF path, file size, Canva design URL (for manual tweaking)
 - If `find_and_replace_text` finds no matches → try broader substring matching
 - Always provide the Canva design URL so the user can edit manually if auto-edit fails
 
-## Post-generación
+## Post-generation
 
-Actualizar tracker si la oferta ya está registrada: cambiar PDF de ❌ a ✅.
+Update tracker if the offer is already registered: change PDF from ❌ to ✅.
