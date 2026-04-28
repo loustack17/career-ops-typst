@@ -349,14 +349,15 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 	}
 
 	borderStyle := lipgloss.NewStyle().Foreground(m.theme.Overlay)
-	labelStyle := lipgloss.NewStyle().Foreground(m.theme.Sky).Bold(true).Width(16)
-	valueStyle := lipgloss.NewStyle().Foreground(m.theme.Text)
 	borderL := borderStyle.Render("│")
 	borderR := borderStyle.Render("│")
 	tw := w - 19
 	if tw < 10 {
 		tw = 10
 	}
+
+	labelStyle := lipgloss.NewStyle().Foreground(m.theme.Sky).Bold(true).Width(16)
+	valueStyle := lipgloss.NewStyle().Foreground(m.theme.Text).Width(tw)
 
 	topBorder := borderStyle.Render("┌" + strings.Repeat("─", w) + "┐")
 	botBorder := borderStyle.Render("└" + strings.Repeat("─", w) + "┘")
