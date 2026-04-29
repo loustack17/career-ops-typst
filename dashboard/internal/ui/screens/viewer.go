@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -356,8 +357,8 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 		tw = 10
 	}
 
-	labelStyle := lipgloss.NewStyle().Foreground(m.theme.Sky).Bold(true).Width(16)
-	valueStyle := lipgloss.NewStyle().Foreground(m.theme.Text).Width(tw)
+	labelStyle := lipgloss.NewStyle().Foreground(m.theme.Sky).Bold(true)
+	valueStyle := lipgloss.NewStyle().Foreground(m.theme.Text)
 
 	topBorder := borderStyle.Render("┌" + strings.Repeat("─", w) + "┐")
 	botBorder := borderStyle.Render("└" + strings.Repeat("─", w) + "┘")
@@ -426,11 +427,18 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 			wrapped := ansi.Wrap(content, tw, "")
 			wrapLines := strings.Split(wrapped, "\n")
 			for wi, wl := range wrapLines {
-				if wi == 0 {
-					result = append(result, borderL+labelStyle.Render(label+":")+" "+valueStyle.Render(wl)+borderR)
-				} else {
-					result = append(result, borderL+labelStyle.Render(strings.Repeat(" ", 16))+" "+valueStyle.Render(wl)+borderR)
+				lb := label + ":"
+				if wi > 0 {
+					lb = ""
 				}
+				runes := []rune(wl)
+				if len(runes) > tw {
+					wl = string(runes[:tw])
+				}
+				labelPart := labelStyle.Render(fmt.Sprintf("%-16s", lb))
+				valPart := valueStyle.Render(fmt.Sprintf("%-*s", tw, wl))
+				line := borderL + labelPart + " " + valPart + borderR
+				result = append(result, lipgloss.NewStyle().Width(w).Render(line))
 			}
 
 			prevIsStar = isStar
