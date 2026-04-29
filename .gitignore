@@ -50,3 +50,6 @@ package-lock.json
 # Local AI / renderer temp
 .codex
 .typst-*/
+dashboard/dashboard
+*.bak
+linkedin-batch.txt
