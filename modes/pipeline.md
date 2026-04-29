@@ -9,7 +9,7 @@ Processes accumulated job offer URLs in `data/pipeline.md`. The user adds URLs a
    a. Calculate next sequential `REPORT_NUM` (read `reports/`, take the highest number + 1)
    b. **Extract JD** using Playwright (browser_navigate + browser_snapshot) → WebFetch → WebSearch
    c. If the URL is not accessible → mark as `- [!]` with note and continue
-   d. **Run full auto-pipeline**: A-F Evaluation → Report .md → PDF (if score >= 3.0) → Tracker
+    d. **Run full auto-pipeline**: A-F Evaluation → Report .md (use `modes/pipeline-report.md` format with URL + actual PDF path) → PDF (if score >= 3.5) → Tracker
    e. **Move from "Pending" to "Processed"**: `- [x] #NNN | URL | Company | Role | Score/5 | PDF ✅/❌`
 3. **If there are 3+ pending URLs**, launch parallel agents (Agent tool with `run_in_background`) to maximize speed.
 4. **On completion**, show summary table:
