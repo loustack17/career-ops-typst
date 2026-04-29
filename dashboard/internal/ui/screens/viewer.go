@@ -348,7 +348,7 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 	if w < 10 {
 		w = 10
 	}
-	tw := w - 19
+	tw := w - 20
 	if tw < 10 {
 		tw = 10
 	}
@@ -371,7 +371,6 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 	midBorder := lineStyle.Render("├" + strings.Repeat("─", w-2) + "┤")
 
 	var result []string
-	firstRow := true
 
 	for _, line := range dataLines {
 		cells := parseTableCells(line)
@@ -379,10 +378,7 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 		if numIdx >= 0 && numIdx < len(cells) {
 			numStr := strings.TrimSpace(cells[numIdx])
 			if numStr != "" {
-				if firstRow {
-					result = append(result, topBorder)
-					firstRow = false
-				} else {
+				if len(result) > 0 {
 					result = append(result, midBorder)
 				}
 				numHeader := "#" + numStr
@@ -432,10 +428,10 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 					wl = string(runes[:tw])
 				}
 				if wi == 0 {
-					row := lineStyle.Render(fmt.Sprintf("│%-16s %-*s│", label+":", tw, wl))
+					row := lineStyle.Render(fmt.Sprintf("│%-16s│ %-*s│", label+":", tw, wl))
 					result = append(result, row)
 				} else {
-					row := lineStyle.Render(fmt.Sprintf("│%-16s %-*s│", "", tw, wl))
+					row := lineStyle.Render(fmt.Sprintf("│%-16s│ %-*s│", "", tw, wl))
 					result = append(result, row)
 				}
 			}
