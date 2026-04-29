@@ -410,6 +410,7 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 			if content == "" {
 				continue
 			}
+			content = m.renderInlineElements(content)
 
 			label := truncateRunes(hi, 15)
 			isStar := label == "S" || label == "T" || label == "A" || label == "R"
