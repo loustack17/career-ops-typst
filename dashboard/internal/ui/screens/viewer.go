@@ -348,21 +348,10 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 	if w < 10 {
 		w = 10
 	}
-
-	borderStyle := lipgloss.NewStyle().Foreground(m.theme.Overlay)
-	borderL := borderStyle.Render("│")
-	borderR := borderStyle.Render("│")
 	tw := w - 19
 	if tw < 10 {
 		tw = 10
 	}
-
-	labelStyle := lipgloss.NewStyle().Foreground(m.theme.Sky).Bold(true)
-	valueStyle := lipgloss.NewStyle().Foreground(m.theme.Text)
-
-	topBorder := borderStyle.Render("┌" + strings.Repeat("─", w) + "┐")
-	botBorder := borderStyle.Render("└" + strings.Repeat("─", w) + "┘")
-	midBorder := borderStyle.Render("├" + strings.Repeat("─", w) + "┤")
 
 	numIdx := -1
 	var displayHeaders []string
@@ -376,6 +365,11 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 		displayIndexes = append(displayIndexes, i)
 	}
 
+	lineStyle := lipgloss.NewStyle().Width(w)
+	topBorder := lineStyle.Render("┌" + strings.Repeat("─", w-2) + "┐")
+	botBorder := lineStyle.Render("└" + strings.Repeat("─", w-2) + "┘")
+	midBorder := lineStyle.Render("├" + strings.Repeat("─", w-2) + "┤")
+
 	var result []string
 	firstRow := true
 
@@ -383,22 +377,25 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 		cells := parseTableCells(line)
 
 		if firstRow {
-			result = append(result, topBorder)
 			firstRow = false
-		} else {
-			result = append(result, midBorder)
 		}
 
 		if numIdx >= 0 && numIdx < len(cells) {
 			numStr := strings.TrimSpace(cells[numIdx])
 			if numStr != "" {
 				numHeader := "#" + numStr
-				padTotal := w - 2 - lipgloss.Width(numHeader)
+				padTotal := w - 2 - len(numHeader)
+				if padTotal < 0 {
+					padTotal = 0
+				}
 				leftPad := padTotal / 2
 				rightPad := padTotal - leftPad
-				headerLine := lipgloss.NewStyle().Bold(true).Foreground(m.theme.Blue).Render(numHeader)
-				result = append(result, borderL+strings.Repeat(" ", leftPad)+headerLine+strings.Repeat(" ", rightPad)+borderR)
-				result = append(result, midBorder)
+				row := lineStyle.Render(fmt.Sprintf("│%s%s%s│",
+					strings.Repeat(" ", leftPad),
+					numHeader,
+					strings.Repeat(" ", rightPad),
+				))
+				result = append(result, row)
 			}
 		}
 
@@ -427,25 +424,28 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 			wrapped := ansi.Wrap(content, tw, "")
 			wrapLines := strings.Split(wrapped, "\n")
 			for wi, wl := range wrapLines {
-				lb := label + ":"
-				if wi > 0 {
-					lb = ""
-				}
 				runes := []rune(wl)
 				if len(runes) > tw {
 					wl = string(runes[:tw])
 				}
-				labelPart := labelStyle.Render(fmt.Sprintf("%-16s", lb))
-				valPart := valueStyle.Render(fmt.Sprintf("%-*s", tw, wl))
-				line := borderL + labelPart + " " + valPart + borderR
-				result = append(result, lipgloss.NewStyle().Width(w).Render(line))
+				if wi == 0 {
+					row := lineStyle.Render(fmt.Sprintf("│%-16s %-*s│", label+":", tw, wl))
+					result = append(result, row)
+				} else {
+					row := lineStyle.Render(fmt.Sprintf("│%-16s %-*s│", "", tw, wl))
+					result = append(result, row)
+				}
 			}
 
 			prevIsStar = isStar
 		}
 	}
 
-	result = append(result, botBorder)
+	if len(result) > 0 {
+		result = append([]string{topBorder}, result...)
+		result = append(result, botBorder)
+	}
+
 	return result
 }
 
