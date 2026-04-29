@@ -376,13 +376,15 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 	for _, line := range dataLines {
 		cells := parseTableCells(line)
 
-		if firstRow {
-			firstRow = false
-		}
-
 		if numIdx >= 0 && numIdx < len(cells) {
 			numStr := strings.TrimSpace(cells[numIdx])
 			if numStr != "" {
+				if firstRow {
+					result = append(result, topBorder)
+					firstRow = false
+				} else {
+					result = append(result, midBorder)
+				}
 				numHeader := "#" + numStr
 				padTotal := w - 2 - len(numHeader)
 				if padTotal < 0 {
@@ -396,6 +398,7 @@ func (m ViewerModel) renderCardTable(lines []string) []string {
 					strings.Repeat(" ", rightPad),
 				))
 				result = append(result, row)
+				result = append(result, midBorder)
 			}
 		}
 
