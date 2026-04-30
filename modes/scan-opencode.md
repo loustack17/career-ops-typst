@@ -52,7 +52,7 @@ Use the best available OpenCode tools for each scan phase:
 
 | Canonical capability | OpenCode execution |
 |----------------------|-------------------|
-| Playwright browser scan | Use available browser/navigation tools, or local Playwright shell scripts when exposed |
+| Playwright browser scan | Required for Level 1; use browser/navigation tools or local Playwright shell scripts |
 | WebSearch discovery | Use the configured web search tool; if blocked, try another available search route and report the blocker |
 | ATS/API fetch | Use shell or fetch tools for Greenhouse, Ashby, Lever, BambooHR, Teamtailor, Workday, and other configured APIs |
 | LinkedIn resolution | Run `node resolve-linkedin.mjs '<url>' --add-to-pipeline --keep-lead --title '<title>' --company '<company>' --query-name '<query>'` |
@@ -184,7 +184,7 @@ Do not add raw LinkedIn or Indeed search pages directly to `data/pipeline.md`.
 
 Verify Level 3 non-resolver candidates before adding them to the pipeline:
 
-1. Browser navigate to the URL.
+1. Use Playwright/browser navigation to open the URL.
 2. Confirm the role title, JD body, and active apply control are present.
 3. Treat explicit closed/expired signals as expired.
 4. Treat 403, bot challenge, and login-wall pages as blocked or manual verify, not automatically expired.

@@ -22,4 +22,6 @@ Load and follow these files:
 10. `data/pipeline.md`
 11. `data/applications.md` if present
 
+Use Playwright/browser navigation first for every web URL. Do not require the user to say "use Playwright". Use WebFetch only after browser extraction is unavailable or fails, and WebSearch only as the last resort defined in `modes/pipeline.md`.
+
 Execute `modes/pipeline.md`. Process only the pending items requested by the user when a scope is provided; otherwise process all pending items. Use the existing report, PDF, tracker-addition, and merge flow.

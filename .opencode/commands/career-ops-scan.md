@@ -18,6 +18,8 @@ Load and follow these files in order:
 
 Execute the full three-level scan defined in `modes/scan.md` using the OpenCode runtime mapping in `modes/scan-opencode.md`.
 
+Use Playwright/browser navigation for Level 1 and Level 3 liveness verification on every scan. Do not require the user to say "use Playwright". Use fetch/search/scripts only where the mode explicitly defines them as supplements or fallbacks.
+
 Do not replace the scan with `node scan.mjs` alone. Use `scan.mjs` only as the Level 2 ATS/API supplement.
 
 If Level 3 WebSearch is blocked (403, permission denied, timeout, or empty results), you MUST attempt the fallback order defined in `modes/scan-opencode.md`. Do not silently skip Level 3. Record every fallback attempt in the final summary.

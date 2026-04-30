@@ -7,7 +7,7 @@ Processes accumulated job offer URLs in `data/pipeline.md`. The user adds URLs a
 1. **Read** `data/pipeline.md` → find `- [ ]` items in the "Pending" section
 2. **For each pending URL**:
    a. Calculate next sequential `REPORT_NUM` (read `reports/`, take the highest number + 1)
-   b. **Extract JD** using Playwright (browser_navigate + browser_snapshot) → WebFetch → WebSearch
+   b. **Extract JD** using Playwright/browser navigation first every time (browser_navigate + browser_snapshot) → WebFetch fallback → WebSearch last resort
    c. If the URL is not accessible → mark as `- [!]` with note and continue
     d. **Run full auto-pipeline**: A-F Evaluation → Report .md (use `modes/pipeline-report.md` format with URL + actual PDF path) → PDF (if score >= 3.5) → Tracker
    e. **Move from "Pending" to "Processed"**: `- [x] #NNN | URL | Company | Role | Score/5 | PDF ✅/❌`
@@ -33,7 +33,7 @@ Processes accumulated job offer URLs in `data/pipeline.md`. The user adds URLs a
 
 ## Intelligent JD detection from URL
 
-1. **Playwright (preferred):** `browser_navigate` + `browser_snapshot`. Works with all SPAs.
+1. **Playwright (required first):** `browser_navigate` + `browser_snapshot`. Works with all SPAs. Do not ask the user to opt in to Playwright.
 2. **WebFetch (fallback):** For static pages or when Playwright is not available.
 3. **WebSearch (last resort):** Search secondary portals that index the JD.
 
