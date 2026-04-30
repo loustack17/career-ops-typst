@@ -58,7 +58,7 @@ Wraps the A-G evaluation from `oferta.md` with metadata (URL, PDF, Legitimacy, V
 ## Rules
 
 1. **URL is required** -- always include the original JD URL. For LinkedIn agency postings resolved via `resolve-linkedin.mjs`, use `local:jds/{linkedin-filename}.md`.
-2. **PDF must be actual path** -- never "pending". Use the full relative path (e.g. `output/output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`) or "No (score < 3.5)".
+2. **PDF must be actual path** -- never "pending". Use the full relative path (e.g. `output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`) or "No (score < 3.5)".
 3. **Verification is optional** -- add when there's a specific verification story (e.g. Playwright check, WebFetch confirmation, resolve-linkedin extraction).
 4. **Archetype** -- pick from `_shared.md` 6 archetypes.
 5. **Block content** -- identical to oferta.md evaluation. Do NOT add "10-Dimension Scoring", "Final Recommendation", or "Status" sections.

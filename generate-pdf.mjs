@@ -631,6 +631,7 @@ function normalizeWorkerPayload(input, fallback) {
     education: normalizeEducation(input.education || fallback.education),
     certifications: normalizeCertifications(input.certifications || fallback.certifications),
     skills: normalizeSkills(input.skills || fallback.skills),
+    ...(input.letter ? { letter: input.letter } : {}),
   };
 }
 
