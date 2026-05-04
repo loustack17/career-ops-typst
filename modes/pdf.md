@@ -18,7 +18,7 @@
 12. Build a temporary payload with CV overrides for this offer
 13. Read `candidate.full_name` from `config/profile.yml` → normalize to kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
 14. Write payload to `/tmp/cv-{candidate}-{company}.json`
-15. Run: `node generate-pdf.mjs cv.md output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --payload=/tmp/cv-{candidate}-{company}.json --format={letter|a4}`
+15. Run: `node generate-pdf.mjs cv.md output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --payload=/tmp/cv-{candidate}-{company}.json --format={letter|a4}`
 16. If for any reason a temporary `.json` was generated inside `output/`, delete it when done. `output/` must contain the final PDF, not temporary payloads.
 17. Report: PDF path, page count, % keyword coverage
 

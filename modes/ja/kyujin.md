@@ -103,7 +103,7 @@ JD の要件にマッピングした 6-10 の STAR+R ストーリー（STAR + **
 
 ### 1. report を .md として保存
 
-完全な評価を `reports/{###}-{company-slug}-{YYYY-MM-DD}.md` に保存。
+完全な評価を `reports/{YYYY-MM-DD}/{###}-{company-slug}-{YYYY-MM-DD}.md` に保存。
 
 - `{###}` = 次の連番（3 桁、ゼロパディング）
 - `{company-slug}` = 企業名を小文字に、スペースなし（ハイフン使用）

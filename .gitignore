@@ -3,9 +3,9 @@ cv.md
 data/applications.md
 data/pipeline.md
 data/scan-history.tsv
-reports/*.md
+reports/**/*.md
 !reports/.gitkeep
-output/*
+output/**
 !output/.gitkeep
 batch/logs/*
 !batch/logs/.gitkeep
@@ -59,3 +59,5 @@ package-lock.json
 dashboard/dashboard
 *.bak
 linkedin-batch.txt
+reports/2026-*
+output/2026-*

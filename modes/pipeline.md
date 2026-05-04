@@ -9,8 +9,9 @@ Processes accumulated job offer URLs in `data/pipeline.md`. The user adds URLs a
    a. Calculate next sequential `REPORT_NUM` (read `reports/`, take the highest number + 1)
    b. **Extract JD** using Playwright/browser navigation first every time (browser_navigate + browser_snapshot) → WebFetch fallback → WebSearch last resort
    c. If the URL is not accessible → mark as `- [!]` with note and continue
-    d. **Run full auto-pipeline**: A-F Evaluation → Report .md (use `modes/pipeline-report.md` format with URL + actual PDF path) → PDF (if score >= 3.5) → Tracker
-   e. **Move from "Pending" to "Processed"**: `- [x] #NNN | URL | Company | Role | Score/5 | PDF ✅/❌`
+   d. If the title or JD level is Staff, Principal, Lead, Tech Lead, Team Lead, Manager, Director, Head, or Architect, mark it as skipped for level mismatch unless the user explicitly requested stretch roles. Do not generate a PDF.
+   e. **Run full auto-pipeline**: A-G Evaluation → Report .md (with URL + actual PDF path) → PDF (if score >= 3.5 and not level-filtered) → Tracker
+   f. **Move from "Pending" to "Processed"**: `- [x] #NNN | URL | Company | Role | Score/5 | PDF ✅/❌`
 3. **If there are 3+ pending URLs**, launch parallel agents (Agent tool with `run_in_background`) to maximize speed.
 4. **On completion**, show summary table:
 

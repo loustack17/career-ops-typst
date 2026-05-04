@@ -170,7 +170,7 @@ Analyze posting signals to assess whether this is a real, active opening.
 
 Save complete evaluation to:
 ```
-reports/{{REPORT_NUM}}-{company-slug}-{{DATE}}.md
+reports/{{DATE}}/{{REPORT_NUM}}-{company-slug}-{{DATE}}.md
 ```
 
 Where `{company-slug}` is the company name in lowercase, no spaces, with dashes.
@@ -185,7 +185,7 @@ Where `{company-slug}` is the company name in lowercase, no spaces, with dashes.
 **Score:** {X/5}
 **Legitimacy:** {High Confidence | Proceed with Caution | Suspicious}
 **URL:** {Original offer URL}
-**PDF:** career-ops/output/cv-candidate-{company-slug}-{{DATE}}.pdf
+**PDF:** career-ops/output/{{DATE}}/cv-candidate-{company-slug}-{{DATE}}.pdf
 **Batch ID:** {{ID}}
 
 ---
@@ -235,7 +235,7 @@ Where `{company-slug}` is the company name in lowercase, no spaces, with dashes.
 ```bash
 node generate-pdf.mjs \
   cv.md \
-  output/cv-candidate-{company-slug}-{{DATE}}.pdf \
+  output/{{DATE}}/cv-candidate-{company-slug}-{{DATE}}.pdf \
   --payload=/tmp/cv-candidate-{company-slug}.json \
   --format={letter|a4}
 ```
@@ -292,7 +292,7 @@ batch/tracker-additions/{{ID}}.tsv
 
 TSV format (single line, no header, 9 tab-separated columns):
 ```
-{next_num}\t{{DATE}}\t{company}\t{role}\t{status}\t{score}/5\t{pdf_emoji}\t[{{REPORT_NUM}}](reports/{{REPORT_NUM}}-{company-slug}-{{DATE}}.md)\t{one_line_note}
+{next_num}\t{{DATE}}\t{company}\t{role}\t{status}\t{score}/5\t{pdf_emoji}\t[{{REPORT_NUM}}](reports/{{DATE}}/{{REPORT_NUM}}-{company-slug}-{{DATE}}.md)\t{one_line_note}
 ```
 
 **TSV columns (exact order):**

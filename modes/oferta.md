@@ -148,7 +148,7 @@ Analyze the job posting for signals that indicate whether this is a real, active
 
 ### 1. Save report .md
 
-Save full evaluation in `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
+Save full evaluation in `reports/{YYYY-MM-DD}/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 
 - `{###}` = next sequential number (3 digits, zero-padded)
 - `{company-slug}` = company name in lowercase, no spaces (use dashes)

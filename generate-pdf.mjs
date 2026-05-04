@@ -139,14 +139,32 @@ function defaultOutputFilename(data, sourcePath) {
   return `${sourceSlug || 'cv-output'}.pdf`;
 }
 
+function extractDateFromFilename(filename) {
+  const m = filename.match(/-(\d{4}-\d{2}-\d{2})\.pdf$/);
+  return m ? m[1] : null;
+}
+
 async function resolveOutputPath(outputPath, data, sourcePath) {
   if (!outputPath) {
     const outputDir = join(projectRoot, 'output');
-    await mkdir(outputDir, { recursive: true });
-    return join(outputDir, defaultOutputFilename(data, sourcePath));
+    const filename = defaultOutputFilename(data, sourcePath);
+    const date = extractDateFromFilename(filename);
+    const dir = date ? join(outputDir, date) : outputDir;
+    await mkdir(dir, { recursive: true });
+    return join(dir, filename);
   }
   const resolved = resolve(outputPath);
   if (extname(resolved).toLowerCase() === '.pdf') {
+    const rel = resolved.replace(resolve(projectRoot, 'output') + '/', '');
+    if (!rel.includes('/')) {
+      const filename = resolved.split('/').pop();
+      const date = extractDateFromFilename(filename);
+      if (date) {
+        const dir = join(projectRoot, 'output', date);
+        await mkdir(dir, { recursive: true });
+        return join(dir, filename);
+      }
+    }
     return resolved;
   }
   await mkdir(resolved, { recursive: true });

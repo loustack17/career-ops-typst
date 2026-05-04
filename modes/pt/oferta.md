@@ -101,7 +101,7 @@ Incluir também:
 
 ### 1. Salvar report .md
 
-Salvar avaliação completa em `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
+Salvar avaliação completa em `reports/{YYYY-MM-DD}/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 
 - `{###}` = próximo número sequencial (3 dígitos, zero-padded)
 - `{company-slug}` = nome da empresa em lowercase, sem espaços (usar hifens)

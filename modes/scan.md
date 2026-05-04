@@ -169,6 +169,8 @@ If Indeed returns a Cloudflare-blocked page or does not expose reliable metadata
    - At least 1 `positive` keyword must appear in the title (case-insensitive)
    - 0 `negative` keywords must appear
    - `seniority_boost` keywords give priority but are not required
+   - Default level exclusions: Staff, Principal, Lead, Tech Lead, Team Lead, Manager, Director, Head, and Architect titles are `skipped_level` unless the user explicitly asks for stretch roles
+   - Senior is allowed only when the JD reads like a 5+ year hands-on IC role, not org-wide ownership or 8-10+ year leadership scope
 
 7. **Deduplicate** against 3 sources:
    - `scan-history.tsv` → exact URL already seen
@@ -201,8 +203,9 @@ If Indeed returns a Cloudflare-blocked page or does not expose reliable metadata
    b. Register in `scan-history.tsv`: `{url}\t{date}\t{query_name}\t{title}\t{company}\tadded`
 
 9. **Offers filtered by title**: register in `scan-history.tsv` with status `skipped_title`
-10. **Duplicate offers**: register with status `skipped_dup`
-11. **Expired offers (Level 3)**: register with status `skipped_expired`
+10. **Offers filtered by level**: register in `scan-history.tsv` with status `skipped_level`
+11. **Duplicate offers**: register with status `skipped_dup`
+12. **Expired offers (Level 3)**: register with status `skipped_expired`
 
 ## Title and company extraction from WebSearch results
 

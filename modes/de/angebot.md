@@ -100,7 +100,7 @@ Außerdem aufnehmen:
 
 ### 1. Report .md speichern
 
-Die vollständige Bewertung in `reports/{###}-{company-slug}-{YYYY-MM-DD}.md` ablegen.
+Die vollständige Bewertung in `reports/{YYYY-MM-DD}/{###}-{company-slug}-{YYYY-MM-DD}.md` ablegen.
 
 - `{###}` = nächste fortlaufende Nummer (3-stellig, mit führenden Nullen)
 - `{company-slug}` = Firmenname in Kleinbuchstaben, ohne Leerzeichen (Bindestriche verwenden)
