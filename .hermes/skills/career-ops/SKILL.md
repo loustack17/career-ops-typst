@@ -83,36 +83,20 @@ If Hermes subagents are unavailable, run the same mode inline and report that de
 
 Use Hermes Superpowers when the task matches `docs/HERMES-SUPERPOWERS.md`.
 
+## Multi-Agent Deployment
+
+career-ops supports multiple agents (Claude Code, Codex, Hermes, OpenCode, Gemini CLI). Each agent has its own skill/command directory and invocation convention. See `references/multi-agent-deployment.md` for the full agent-location table, the `.codex/skills/` vs `.agents/skills/` pitfall, and architecture principles.
+
 ## Behavioral Rules
 
-1. **Use `terminal` tool** for Node.js scripts:
-   - `node scan.mjs`
-   - `node check-liveness.mjs`
-   - `node resolve-linkedin.mjs`
-   - `node resolve-indeed.mjs`
-   - `node merge-tracker.mjs`
-   - `node generate-pdf.mjs`
-   - `node verify-pipeline.mjs`
-   - `node normalize-statuses.mjs`
-   - `node dedup-tracker.mjs`
-
-2. **Use `browser_navigate` + `browser_snapshot`** for offer verification. Never trust `web_extract` alone for active/intact determination. Use `web_extract` as fallback only in batch mode and mark the report as `**Verification:** unconfirmed (batch mode)`.
-
-3. **Use `web_search` + `web_extract`** for Level 3 scan discovery.
-
-4. **Never submit an application** for the user. Fill forms, draft answers, generate PDFs -- but always STOP before clicking Submit/Send/Apply.
-
-5. **Never write tracker rows directly** into `data/applications.md`. Use TSV additions in `batch/tracker-additions/` plus `node merge-tracker.mjs`.
-
-6. **After each batch of evaluations**, run `node merge-tracker.mjs`.
-
-7. **NEVER create new entries** in `applications.md` if company+role already exists. Update the existing entry.
-
-8. All reports MUST include `**URL:**` and `**Legitimacy:**` in the header.
-
-9. All statuses MUST be canonical (see `templates/states.yml`).
-
-10. **Check `config/profile.yml`** for `language.modes_dir` to select locale modes directory (e.g., `modes/de`, `modes/fr`, `modes/ja`, `modes/pt`).
+1. **Use browser tools** for offer verification. Never trust `web_extract` alone. Batch fallback: mark `**Verification:** unconfirmed (batch mode)`.
+2. **Never submit an application** for the user.
+3. **Never write tracker rows directly** into `data/applications.md`. Use TSV + `merge-tracker.mjs`.
+4. All reports MUST include `**URL:**` and `**Legitimacy:**`.
+5. All statuses MUST be canonical (see `templates/states.yml`).
+6. After each batch, run `node merge-tracker.mjs`.
+7. **NEVER create new entries** if company+role already exists.
+8. Check `config/profile.yml` for `language.modes_dir`.
 
 ### LinkedIn & Indeed Resolvers
 
@@ -121,4 +105,4 @@ node resolve-linkedin.mjs '<url>' --add-to-pipeline --keep-lead --title '<title>
 node resolve-indeed.mjs '<url>' --add-to-pipeline --keep-lead --title '<title>' --company '<company>'
 ```
 
-Route concrete LinkedIn URLs through the LinkedIn resolver. Route concrete Indeed URLs through the Indeed resolver. Do not attempt to scrape these platforms directly -- their anti-bot measures will block browser tools.
+Route concrete LinkedIn/Indeed URLs through resolvers. Do not scrape these platforms directly.
