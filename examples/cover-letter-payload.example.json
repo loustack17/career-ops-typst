@@ -19,10 +19,6 @@
         "display": "linkedin.com/in/lou-chang"
       },
       {
-        "href": "https://github.com/loustack17",
-        "display": "github.com/loustack17"
-      },
-      {
         "href": "https://loustack.dev",
         "display": "loustack.dev"
       }
@@ -30,11 +26,9 @@
   },
   "letter": {
     "date": "May 5, 2026",
-    "recipient_name": "Hiring Manager",
+    "recipient_name": "Hiring Team",
     "recipient_lines": [
-      "Example Corp",
-      "123 Business Ave",
-      "Toronto, ON M5A 1A1"
+      "Example Corp"
     ],
     "salutation": "Dear Hiring Manager,",
     "body": [

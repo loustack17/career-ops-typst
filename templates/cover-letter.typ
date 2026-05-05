@@ -130,7 +130,9 @@
 
 #text(size: letter-date-size, fill: text-dark)[#data.letter.recipient_name]
 #for line in data.letter.recipient_lines [
-  #text(size: letter-date-size, fill: text-dark)[#line]
+  #block(above: 0pt, below: 0pt)[
+    #text(size: letter-date-size, fill: text-dark)[#line]
+  ]
 ]
 
 #v(8pt)
