@@ -14,10 +14,14 @@ Export a tailored, ATS-optimized CV as a `.typ` file and compile it to PDF via `
 8. Select top 3-4 most relevant projects for the offer
 9. Reorder experience bullets by JD relevance
 10. Inject keywords naturally into existing achievements
-11. Generate the `.typ` file using `templates/cv-template.typ`
-12. Write to `output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.typ`
-13. Run: `typst compile output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
-14. Report: .typ path, .pdf path, file sizes, section count, keyword coverage %
+11. Generate `output/{YYYY-MM-DD}/payload-{company-slug}-{YYYY-MM-DD}.json` with the CV data (identity, summary, experience, projects, education, certifications, skills, meta)
+12. Generate `output/{YYYY-MM-DD}/build-{company-slug}-{YYYY-MM-DD}.typ` with:
+    ```
+    #let data = json("payload-{company-slug}-{YYYY-MM-DD}.json")
+    #include("../../templates/cv-template.typ")
+    ```
+13. Run: `typst compile --root . output/{YYYY-MM-DD}/build-{company-slug}-{YYYY-MM-DD}.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
+14. Report: PDF path, file size, section count, keyword coverage %
 
 **Requires:** `typst` on PATH (`brew install typst` or `cargo install typst-cli`).
 
