@@ -38,20 +38,15 @@ Export a tailored, ATS-optimized CV as a `.typ` file and compile it to PDF via `
     }
     ```
     **CRITICAL:** Pull all identity fields (full_name, location, email, linkedin, github, portfolio_url) from `config/profile.yml`. Never invent or omit contact info.
-12. Write a build wrapper to `output/{YYYY-MM-DD}/build.typ`:
-    ```
-    #let data = json("payload.json")
-    #include("../../templates/cv-template.typ")
-    ```
-13. Run: `typst compile --root . output/{YYYY-MM-DD}/build.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
-14. **Delete** `payload.json` and `build.typ` from `output/{YYYY-MM-DD}/` — keep only the PDF
-15. Report: PDF path, file size, section count, keyword coverage %
+12. Run: `typst compile --root . --input payload=../output/{YYYY-MM-DD}/payload.json templates/cv.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
+13. **Delete** `payload.json` from `output/{YYYY-MM-DD}/` — keep only the PDF
+14. Report: PDF path, file size, section count, keyword coverage %
 
 **Requires:** `typst` on PATH (`brew install typst` or `cargo install typst-cli`).
 
 ## Template
 
-Single file: `templates/cv-template.typ`
+Multi-file: `templates/cv.typ` (master) + `templates/cv/*.typ` (sub-templates)
 Fonts: `fonts/Inter-*.ttf`
 
 ## Typst Content Generation Rules
