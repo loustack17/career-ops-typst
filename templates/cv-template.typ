@@ -41,14 +41,14 @@
 #let accent = rgb("#186b8c")
 #let accent-2 = rgb("#9a7ae6")
 #let purple = rgb("#8f42c7")
-#let body-color = rgb("#1a1a2e")
+#let body = rgb("#1a1a2e")
 #let text-dark = rgb("#333333")
 #let text-mid = rgb("#444444")
 #let muted = rgb("#777777")
 #let muted-2 = rgb("#888888")
 #let border = rgb("#e5e5e5")
 #let chip-fill = rgb("#eef8f9")
-#let chip-border-color = rgb("#d7ebee")
+#let chip-border = rgb("#d7ebee")
 #let chip-text = rgb("#125e76")
 #let contact-color = rgb("#555555")
 #let contact-separator-color = rgb("#cccccc")
@@ -155,7 +155,7 @@
 
 #let render-chip(label) = box(
   fill: chip-fill,
-  stroke: (paint: chip-border-color, thickness: chip-border-thickness),
+  stroke: (paint: chip-border, thickness: chip-border-thickness),
   radius: chip-border-radius,
   inset: (x: chip-padding-x, y: chip-padding-y),
 )[
@@ -188,7 +188,7 @@
       font: heading-font,
       size: header-name-size,
       weight: header-name-weight,
-      fill: body-color,
+      fill: body,
     )[#identity.full_name]
   ]
   #grid(
@@ -390,7 +390,7 @@
   margin: page-margin,
 )
 
-#set text(font: base-font, size: base-size, fill: body-color)
+#set text(font: base-font, size: base-size, fill: body)
 #set par(justify: false, leading: base-leading)
 #set block(spacing: base-leading)
 
