@@ -38,7 +38,7 @@ Export a tailored, ATS-optimized CV as a `.typ` file and compile it to PDF via `
     }
     ```
     **CRITICAL:** Pull all identity fields (full_name, location, email, linkedin, github, portfolio_url) from `config/profile.yml`. Never invent or omit contact info.
-12. Run: `typst compile --root . --input payload=../output/{YYYY-MM-DD}/payload.json templates/cv.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
+12. Run: `typst compile --root . --input payload=../output/{YYYY-MM-DD}/payload.json templates/cv-template.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
 13. **Delete** `payload.json` from `output/{YYYY-MM-DD}/` — keep only the PDF
 14. Report: PDF path, file size, section count, keyword coverage %
 
@@ -46,10 +46,10 @@ Export a tailored, ATS-optimized CV as a `.typ` file and compile it to PDF via `
 
 ## Template
 
-Multi-file: `templates/cv.typ` (master) + `templates/cv/*.typ` (sub-templates)
+Single-file: `templates/cv-template.typ`
+Multi-file (reference): `templates/cv.typ` + `templates/cv/*.typ`
+Both produce byte-identical output. The single-file version is preferred for simplicity.
 Fonts: `fonts/Inter-*.ttf`
-
-## Typst Content Generation Rules
 
 ### CV Data Injection
 
