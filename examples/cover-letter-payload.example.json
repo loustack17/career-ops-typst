@@ -7,35 +7,9 @@
     "paper_size": "letter"
   },
   "identity": {
-    "full_name": "Lou Chang",
-    "location": "Toronto, ON, Canada",
-    "contacts": [
-      {
-        "href": "mailto:louchang.dev@outlook.com",
-        "display": "louchang.dev@outlook.com"
-      },
-      {
-        "href": "https://linkedin.com/in/lou-chang",
-        "display": "linkedin.com/in/lou-chang"
-      },
-      {
-        "href": "https://loustack.dev",
-        "display": "loustack.dev"
-      },
-      {
-        "href": "https://github.com/loustack17",
-        "display": "github.com/loustack17"
-      }
-    ]
+    "full_name": "Lou Chang"
   },
   "letter": {
-    "date": "May 5, 2026",
-    "recipient_lines": [
-      "Hiring Manager",
-      "Example Corp",
-      "100 Queen Street West",
-      "Toronto, ON M5H 2N2"
-    ],
     "salutation": "Dear Hiring Manager,",
     "body": [
       "I'm applying for the Platform Engineer role because it matches the direction of my work: improving delivery systems, making infrastructure repeatable, and helping engineering teams operate software with less release and reliability risk.",

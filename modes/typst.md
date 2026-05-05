@@ -119,35 +119,31 @@ Update tracker if the offer is already registered: change PDF from ❌ to ✅.
 
 ## Cover Letter
 
-The cover letter template (`templates/cover-letter.typ`) uses NA standard business letter format (block style):
+The cover letter template (`templates/cover-letter.typ`) is minimal — only the letter content:
 
-| Component | Format |
-|-----------|--------|
-| Sender block | Full name (bold), then each contact on its own line: email, phone, LinkedIn, portfolio, location |
-| Date | Full date (e.g. "May 5, 2026") |
-| Recipient block | Each line on its own line: name/title, company, street address, city/state/zip |
-| Salutation | "Dear X," — colon for formal, comma for informal |
-| Body paragraphs | 3-4 paragraphs, single-spaced, 1em between paragraphs |
-| Closing | "Sincerely," then 2em space then typed full name |
+```
+Dear Hiring Team,
+
+[body paragraph 1]
+
+[body paragraph 2]
+
+[body paragraph 3]
+
+Sincerely,
+
+Lou Chang
+```
+
+No header, no contacts row, no date, no recipient address block. The CV already has all contact info.
 
 **Payload structure for cover letter:**
 ```json
 {
   "meta": { "candidate_name": "...", "company": "...", "role": "...", "language": "en", "paper_size": "letter" },
-  "identity": {
-    "full_name": "...",
-    "location": "...",
-    "contacts": [
-      {"href": "mailto:...", "display": "email"},
-      {"href": "tel:...", "display": "+1-(xxx)-xxx-xxxx"},
-      {"href": "https://linkedin.com/in/...", "display": "linkedin.com/in/..."},
-      {"href": "https://portfolio", "display": "portfolio (no scheme)"}
-    ]
-  },
+  "identity": { "full_name": "..." },
   "letter": {
-    "date": "Month DD, YYYY",
-    "recipient_lines": ["Hiring Manager", "Company Name", "Street Address", "City, State ZIP"],
-    "salutation": "Dear Hiring Manager,",
+    "salutation": "Dear Hiring Team,",
     "body": ["paragraph 1", "paragraph 2", "paragraph 3"],
     "closing": "Sincerely,"
   }
@@ -155,9 +151,7 @@ The cover letter template (`templates/cover-letter.typ`) uses NA standard busine
 ```
 
 **Key differences from CV template:**
-- No gradient header, no cyan/purple accent, no chip grid
-- Georgia 11pt instead of Inter 8.75pt (standard letter font)
-- 1-inch margins (standard business letter)
-- Each contact on its own line (not pipe-delimited in a row)
-- Phone number included (CV omits it)
-- Full recipient address block (not just company name)
+- No header/contacts — CV already has them
+- Inter 11pt, 1.25in margins, no gradient or color
+- `identity` only needs `full_name` (for the signature)
+- `letter` only needs `salutation`, `body`, `closing`
