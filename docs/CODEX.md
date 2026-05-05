@@ -1,17 +1,12 @@
 # Codex Setup
 
-Career-Ops supports Codex through the root `AGENTS.md` file.
-
-If your Codex client reads project instructions automatically, `AGENTS.md`
-is enough for routing and behavior. Codex should reuse the same checked-in
-mode files, templates, tracker flow, and scripts that already power the
-Claude workflow.
+Career-Ops supports Codex through `AGENTS.md` (auto-loaded project context) and a Codex skill router at `.codex/skills/career-ops/SKILL.md`.
 
 ## Prerequisites
 
-- A Codex client that can work with project `AGENTS.md`
+- A Codex client that auto-loads project `AGENTS.md` and discovers local skills under `.codex/skills/`.
 - Node.js 18+
-- Playwright Chromium installed for PDF generation and reliable job verification
+- Playwright Chromium for PDF generation and reliable job verification
 - Go 1.21+ if you want the TUI dashboard
 
 ## Install
@@ -21,86 +16,58 @@ npm install
 npx playwright install chromium
 ```
 
+## Primary Codex UX -- `$career-ops`
+
+Codex has its own command center, equivalent to Claude Code's `/career-ops`. The skill router at `.codex/skills/career-ops/SKILL.md` owns argument parsing, subcommand routing, the discovery menu, and context loading per mode. It routes into the shared `modes/*` files used by Claude Code, OpenCode, Hermes, and Gemini CLI. Only the router and `modes/scan-codex.md` are Codex-specific.
+
+For the full menu, alias list, and routing table, see `.codex/skills/career-ops/SKILL.md`.
+
+## Codex Scan
+
+`$career-ops scan` loads `modes/scan.md` (canonical strategy) and `modes/scan-codex.md` (Codex runtime adapter: tool mapping, subagent rules, Level 3 fallback chain). `node scan.mjs` alone is Level 2 only and is **not** a full scan. For the smoke / parity test, see `docs/CODEX-SCAN.md`.
+
+LinkedIn and Indeed URLs go through the local resolvers, never through direct browser scraping (anti-bot will block).
+
+## Behavior and Subagents
+
+For never-submit, tracker writes, report headers, and personalization placement, see `AGENTS.md` "CRITICAL Rules". For scan subagent dispatch and parent-vs-sidecar ownership, see `modes/scan-codex.md`.
+
+## Superpowers
+
+Use Codex Superpowers skills when their descriptions match. Do not duplicate Superpowers mapping in Career-Ops Codex files -- a separate mapping creates drift.
+
 ## Recommended Starting Prompts
 
-- `Evaluate this job URL with Career-Ops and run the full pipeline.`
-- `Scan my configured portals for new roles that match my profile.`
-- `Generate the tailored ATS PDF for this role using Career-Ops.`
-
-## Routing Map
-
-| User intent | Files Codex should read |
-|-------------|-------------------------|
-| Raw JD text or job URL | `modes/_shared.md` + `modes/auto-pipeline.md` |
-| Single evaluation only | `modes/_shared.md` + `modes/oferta.md` |
-| Multiple offers | `modes/_shared.md` + `modes/ofertas.md` |
-| Portal scan | `modes/_shared.md` + `modes/scan.md` |
-| PDF generation | `modes/_shared.md` + `modes/pdf.md` |
-| Live application help | `modes/_shared.md` + `modes/apply.md` |
-| Pipeline inbox processing | `modes/_shared.md` + `modes/pipeline.md` |
-| Tracker status | `modes/tracker.md` |
-| Deep company research | `modes/deep.md` |
-| Training / certification review | `modes/training.md` |
-| Project evaluation | `modes/project.md` |
-
-The key point: Codex support is additive. It should route into the existing
-Career-Ops modes and scripts rather than introducing a parallel automation
-layer.
-
-## Behavioral Rules
-
-- Treat raw JD text or a job URL as the full auto-pipeline path unless the user explicitly asks for evaluation only.
-- Keep all personalization in `config/profile.yml`, `modes/_profile.md`, `article-digest.md`, or `portals.yml`.
-- Never verify a job’s live status with generic web fetch when Playwright is available.
-- Never submit an application for the user.
-- Never add new tracker rows directly to `data/applications.md`; use the TSV addition flow and `merge-tracker.mjs`.
+- `$career-ops` -- show the menu.
+- `$career-ops oferta <job URL>` -- evaluate only.
+- `$career-ops <full JD text>` -- run the full pipeline.
+- `$career-ops scan` -- agentic portal scan.
+- `$career-ops scan smoke test only, no writes` -- coverage check without modifying data files (see `docs/CODEX-SCAN.md`).
 
 ## Verification
 
 ```bash
-npm run verify
+node doctor.mjs
+git diff --check
+GOCACHE=/tmp/career-ops-go-build-cache node test-all.mjs --quick
 
 # optional dashboard build
 cd dashboard && go build ./...
 ```
 
-## LinkedIn Helper
+Run `node update-system.mjs check` to silently check for upstream updates. The Codex skill router handles `$career-ops update` for explicit checks.
 
-Use the local resolver when a LinkedIn job page is visible but the normal scan flow cannot safely turn it into a pipeline item.
+## LinkedIn / Indeed Helpers
+
+Use local resolvers when LinkedIn or Indeed URLs are visible but the normal scan flow cannot safely turn them into pipeline items. For the complete script reference, see `docs/SCRIPTS.md`.
 
 ```bash
 node resolve-linkedin.mjs 'https://www.linkedin.com/jobs/view/4383142038/' --json
 node resolve-linkedin.mjs 'https://www.linkedin.com/jobs/search-results/?currentJobId=4383142038&keywords=DevOps%20Engineer' --add-to-pipeline
 node resolve-linkedin.mjs 'https://www.linkedin.com/jobs/view/4383142038/' --keep-lead --title 'Platform Engineer - Toronto' --company 'Validus Risk Management'
-```
-
-The resolver:
-- normalizes `search-results?currentJobId=...` and `jobs/view/...` URLs to a canonical `jobs/view/{id}` URL
-- extracts public job details with Playwright
-- writes a local JD into `jds/`
-- optionally appends `local:jds/...` to `data/pipeline.md`
-- can preserve a blocked or low-detail lead in `On Hold — Manual Verify` when `--keep-lead --title --company` are provided
-
-This keeps the existing `pipeline` mode unchanged. After a successful resolve, run the normal `/career-ops pipeline` flow.
-
-For automated scans, `modes/scan.md` now treats LinkedIn as a Level 3 discovery source only. If scan discovers a concrete LinkedIn job URL, it should call `resolve-linkedin.mjs --add-to-pipeline` automatically instead of adding the raw LinkedIn URL.
-
-## Indeed Helper
-
-Use the local resolver when an Indeed job URL is visible but the normal scan flow cannot safely normalize `jk` / `vjk` URLs.
-
-```bash
 node resolve-indeed.mjs 'https://ca.indeed.com/viewjob?jk=2058c3042916c01c' --json
 node resolve-indeed.mjs 'https://ca.indeed.com/?vjk=2058c3042916c01c&advn=4357064039121098' --add-to-pipeline
 node resolve-indeed.mjs 'https://ca.indeed.com/?vjk=2058c3042916c01c&advn=4357064039121098' --keep-lead --title 'DevOps Engineer' --company 'Example Co'
 ```
 
-The resolver:
-- normalizes `vjk` and `jk` URLs to a canonical `viewjob?jk=...` URL
-- extracts public job details with Playwright when available
-- detects Indeed / Cloudflare blocking explicitly
-- writes a local JD into `jds/`
-- optionally appends `local:jds/...` to `data/pipeline.md`
-- can preserve a blocked lead in `On Hold — Manual Verify` when `--keep-lead --title --company` are provided
-
-For automated scans, `modes/scan.md` now treats Indeed results the same way: if scan discovers a concrete Indeed job URL, it should call `resolve-indeed.mjs --add-to-pipeline` instead of adding the raw Indeed URL.
+Resolvers normalize public URLs, write local JDs into `jds/`, optionally append `local:jds/...` to `data/pipeline.md`, and preserve blocked leads with `--keep-lead --title --company`. Automated scans must call the resolver instead of adding raw LinkedIn or Indeed URLs.
