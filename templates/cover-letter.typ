@@ -52,11 +52,11 @@
 #block(below: 0pt)[#data.letter.salutation]
 
 // Gap before first body paragraph
-#v(1.5em)
+#v(2em)
 
-// Body paragraphs — 1.5em between paragraphs
+// Body paragraphs — 2em between paragraphs
 #for paragraph in data.letter.body [
-  #block(below: 1.5em)[#paragraph]
+  #block(below: 2em)[#paragraph]
 ]
 
 // Large gap before closing
