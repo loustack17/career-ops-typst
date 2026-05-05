@@ -68,4 +68,4 @@ Only run a real scan after the smoke test passes.
 | Only `node scan.mjs` ran (Level 2 only) | Model degraded to ATS-only mode | Ensure `modes/scan-hermes.md` is loaded in context. |
 | LinkedIn/Indeed URLs scraped directly | Resolvers not invoked | Verify `resolve-linkedin.mjs` and `resolve-indeed.mjs` exist and are executable. |
 | No final summary | Model stopped early | Use frontier long-context model. Reduce concurrent subagent load. |
-| Duplicate entries in pipeline | Scan dedup missed existing URLs in scan-history/pipeline/applications | Check that dedup ran against all three files. Remove duplicates manually from `data/pipeline.md` and run `node dedup-tracker.mjs`. |
+| Duplicate entries in pipeline | Scan dedup missed existing URLs in scan-history/pipeline/applications | Remove duplicates manually from `data/pipeline.md`. Use `node dedup-tracker.mjs` only if `data/applications.md` also has duplicate tracker rows. |
