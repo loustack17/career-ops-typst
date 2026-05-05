@@ -1,5 +1,12 @@
 // === Data input ===
-#let data = json(sys.inputs.payload)
+// Accepts: --input payload=path/to/payload.json (preferred)
+//          or direct file inclusion
+#let data-path = if "payload" in sys.inputs {
+  sys.inputs.payload
+} else {
+  "../examples/cv-typst-payload.example.json"
+}
+#let data = json(data-path)
 
 // ══════════════════════════════════════════
 // CONFIG — colors, fonts, spacing
