@@ -45,22 +45,24 @@
 )
 
 #set text(font: ("Inter",), size: 11pt, fill: rgb("#1a1a1a"))
-#set par(justify: false, leading: 6pt, first-line-indent: 0pt)
+#set par(justify: false, leading: 12pt, first-line-indent: 0pt)
 #set block(spacing: 0pt, above: 0pt, below: 0pt)
 
 // Salutation
 #block(below: 0pt)[#data.letter.salutation]
 
-// Body paragraphs — 1em between paragraphs
+// Gap before first body paragraph
+#v(1.5em)
+
+// Body paragraphs — 1.5em between paragraphs
 #for paragraph in data.letter.body [
-  #v(1em)
-  #block(below: 0pt)[#paragraph]
+  #block(below: 1.5em)[#paragraph]
 ]
 
-// Closing — 1em gap after body, then closing on next line
-#v(1em)
+// Large gap before closing
+#v(2.5em)
 #block(below: 0pt)[#data.letter.closing]
 
-// Name — 3 lines below closing (standard sign-off space)
-#v(3em)
+// Name right below closing
+#v(0.5em)
 #block(below: 0pt)[#identity.full_name]
