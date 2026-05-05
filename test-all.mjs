@@ -162,11 +162,8 @@ const systemFiles = [
   'CLAUDE.md', 'VERSION', 'DATA_CONTRACT.md',
   'modes/_shared.md', 'modes/_profile.template.md',
   'modes/oferta.md', 'modes/pdf.md', 'modes/scan.md',
-  'templates/states.yml', 'templates/cv.typ',
-  'templates/cv/config.typ', 'templates/cv/header.typ',
-  'templates/cv/shared.typ', 'templates/cv/experience.typ',
-  'templates/cv/projects.typ', 'templates/cv/education.typ',
-  'templates/cv/skills.typ',
+  'templates/states.yml', 'templates/cv-template.typ',
+  'fonts/Inter-Regular.ttf',
   '.claude/skills/career-ops/SKILL.md',
 ];
 

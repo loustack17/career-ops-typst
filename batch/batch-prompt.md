@@ -18,8 +18,7 @@ You are a job offer evaluation worker for the candidate (read name from config/p
 | llms.txt | `llms.txt (if exists)` | ALWAYS |
 | article-digest.md | `article-digest.md (project root)` | ALWAYS (proof points) |
 | i18n.ts | `i18n.ts (if exists, optional)` | Only interviews/deep |
-| cv.typ | `templates/cv.typ` | Entry point PDF |
-| cv modules | `templates/cv/*.typ` | Layout PDF |
+| cv-template.typ | `templates/cv-template.typ` | PDF generation |
 | generate-pdf.mjs | `generate-pdf.mjs` | For PDF |
 
 **RULE: NEVER write to cv.md or i18n.ts.** They are read-only.
@@ -250,7 +249,7 @@ node generate-pdf.mjs \
 - Keywords distributed: Summary (top 5), first bullet of each role, Skills section
 
 **Design:**
-- Renderer: `templates/cv.typ` + `templates/cv/*.typ`
+- Renderer: `templates/cv-template.typ`
 - Header: same visual language as the active CV template, with accent rule + contact row
 - Section headers: uppercase, cyan primary, compact divider
 - Body: compact ATS-friendly single-column layout

@@ -75,8 +75,6 @@ Export a tailored, ATS-optimized CV as PDF via `typst compile`.
 ## Template
 
 Single-file: `templates/cv-template.typ`
-Multi-file (reference): `templates/cv.typ` + `templates/cv/*.typ`
-Both produce byte-identical output. The single-file version is preferred for simplicity.
 Fonts: `fonts/Inter-*.ttf`
 
 ### CV Data Injection

@@ -34,7 +34,7 @@
 
 ## PDF Design
 
-- **Renderer**: Modular Typst template (`templates/cv.typ` + `templates/cv/*.typ`)
+- **Renderer**: Typst template (`templates/cv-template.typ`)
 - **Fonts**: heading/body fonts chosen by the template, matching the active CV design as closely as possible
 - **Header**: name in Space Grotesk 24px bold + gradient line `linear-gradient(to right, hsl(187,74%,32%), hsl(270,70%,45%))` 2px + contact row
 - **Section headers**: Space Grotesk 13px, uppercase, letter-spacing 0.05em, color cyan primary
@@ -84,7 +84,7 @@ Expected fields in `/tmp/cv-{candidate}-{company}.json`:
 | `certifications` | Override only if needed |
 | `skills` | Final skill list for this offer |
 
-The Typst renderer lives in `templates/cv.typ` and its modules in `templates/cv/*.typ`. Reuse the existing design; do not recreate it from scratch.
+The Typst renderer lives in `templates/cv-template.typ`. Reuse the existing design; do not recreate it from scratch.
 
 ## Canva CV Generation (optional)
 
