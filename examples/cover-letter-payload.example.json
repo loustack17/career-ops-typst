@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "candidate_name": "Lou Chang",
+    "company": "Example Corp",
+    "role": "Platform Engineer",
+    "language": "en",
+    "paper_size": "letter"
+  },
+  "identity": {
+    "full_name": "Lou Chang",
+    "location": "Toronto, ON, Canada",
+    "contacts": [
+      {
+        "href": "mailto:louchang.dev@outlook.com",
+        "display": "louchang.dev@outlook.com"
+      },
+      {
+        "href": "https://linkedin.com/in/lou-chang",
+        "display": "linkedin.com/in/lou-chang"
+      },
+      {
+        "href": "https://github.com/loustack17",
+        "display": "github.com/loustack17"
+      },
+      {
+        "href": "https://loustack.dev",
+        "display": "loustack.dev"
+      }
+    ]
+  },
+  "letter": {
+    "date": "May 5, 2026",
+    "recipient_name": "Hiring Manager",
+    "recipient_lines": [
+      "Example Corp",
+      "123 Business Ave",
+      "Toronto, ON M5A 1A1"
+    ],
+    "salutation": "Dear Hiring Manager,",
+    "body": [
+      "I am writing to express my interest in the Platform Engineer position at Example Corp. With over five years of experience building delivery infrastructure and backend systems across startup and enterprise environments, I am confident in my ability to contribute to your team.",
+      "Most recently, I designed the infrastructure, environment model, and CI/CD strategy to bring a startup from proof-of-concept to production, cutting provisioning time from over two hours to under ten minutes. This work involved migrating from AWS to GCP using Terraform with identity-based deployments, hardening release pipelines with quality gates and deploy-on-merge automation, and building backend services with Python, FastAPI, and PostgreSQL.",
+      "I would welcome the opportunity to discuss how my experience aligns with your needs. Thank you for your consideration."
+    ],
+    "closing": "Sincerely,"
+  }
+}
