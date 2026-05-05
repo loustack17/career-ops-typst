@@ -14,14 +14,15 @@ Export a tailored, ATS-optimized CV as a `.typ` file and compile it to PDF via `
 8. Select top 3-4 most relevant projects for the offer
 9. Reorder experience bullets by JD relevance
 10. Inject keywords naturally into existing achievements
-11. Generate `output/{YYYY-MM-DD}/payload-{company-slug}-{YYYY-MM-DD}.json` with the CV data (identity, summary, experience, projects, education, certifications, skills, meta)
-12. Generate `output/{YYYY-MM-DD}/build-{company-slug}-{YYYY-MM-DD}.typ` with:
+11. Write a JSON payload to `output/{YYYY-MM-DD}/` with the CV data (identity, summary, core_competencies, experience, projects, education, certifications, skills, meta)
+12. Write a build wrapper to `output/{YYYY-MM-DD}/build.typ`:
     ```
-    #let data = json("payload-{company-slug}-{YYYY-MM-DD}.json")
+    #let data = json("payload.json")
     #include("../../templates/cv-template.typ")
     ```
-13. Run: `typst compile --root . output/{YYYY-MM-DD}/build-{company-slug}-{YYYY-MM-DD}.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
-14. Report: PDF path, file size, section count, keyword coverage %
+13. Run: `typst compile --root . output/{YYYY-MM-DD}/build.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
+14. **Delete** `payload.json` and `build.typ` from `output/{YYYY-MM-DD}/` — keep only the PDF
+15. Report: PDF path, file size, section count, keyword coverage %
 
 **Requires:** `typst` on PATH (`brew install typst` or `cargo install typst-cli`).
 
