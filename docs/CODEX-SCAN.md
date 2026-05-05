@@ -9,20 +9,21 @@ This document defines the smoke test and full parity criteria for verifying that
 Run the following prompt in Codex:
 
 ```text
-Run Career-Ops Codex scan smoke test only.
+Use $career-ops-scan smoke test only, no writes.
 Load modes/_shared.md, modes/scan.md, modes/scan-codex.md, portals.yml,
-config/profile.yml, and modes/_profile.md. AGENTS.md and the $career-ops skill
-should already be active if this runtime supports project-local instructions.
+config/profile.yml, and modes/_profile.md. AGENTS.md should already be active
+if this runtime supports project-local instructions.
 
 Do not run pipeline, evaluate, generate reports, generate PDFs, or modify tracker files.
 
 Test:
-1. Browser-open two enabled tracked-company careers pages from portals.yml (Level 1).
-2. Run `node scan.mjs --dry-run` (Level 2).
-3. Attempt two Level 3 search_queries.
-4. If search is blocked, attempt one fallback path from the Level 3 fallback chain and report it.
-5. Report whether LinkedIn/Indeed resolvers would be invoked if concrete URLs were found.
-6. Report whether Codex subagent dispatch is available in this runtime, and whether it was explicitly authorized for this run.
+1. Use subagent sidecars when available; parent remains responsible for no-write orchestration.
+2. Browser-open two enabled tracked-company careers pages from portals.yml (Level 1).
+3. Run `node scan.mjs --dry-run` (Level 2).
+4. Attempt two Level 3 search_queries.
+5. If search is blocked, attempt one fallback path from the Level 3 fallback chain and report it.
+6. Report whether LinkedIn/Indeed resolvers would be invoked if concrete URLs were found.
+7. Report whether Codex subagent dispatch is available in this runtime, and whether it was used.
 ```
 
 ## Pass Criteria
@@ -35,7 +36,7 @@ The smoke test passes if ALL of the following are true:
 4. **Honest parity assessment.** It does NOT claim full parity if Level 3 is blocked and no fallback was attempted.
 5. **Blocked sources reported.** It clearly reports which sources were blocked and why.
 6. **Resolver awareness.** It identifies when LinkedIn / Indeed resolvers would be invoked for concrete URLs.
-7. **Subagent reporting.** It reports whether Codex subagent dispatch is available and whether it was used. It must not spawn subagents unless the user explicitly authorized subagents / parallel delegation.
+7. **Subagent reporting.** It reports whether Codex subagent dispatch is available and whether it was used. `$career-ops-scan` should use scan sidecars by default when available; no-subagent execution is only acceptable when subagents are unavailable or the user explicitly disables them.
 
 The smoke test MAY read `data/scan-history.tsv`, `data/pipeline.md`, and `data/applications.md` for dedup-awareness reporting, and print what would have been added, duplicated, expired, or blocked. See `modes/scan-codex.md` "Smoke Test Constraint" for the no-write list.
 
@@ -48,7 +49,7 @@ Beyond the smoke test, full Claude Code scan parity requires:
 3. **Quality filtering.** Codex adds only `active` or `manual_verify` JDs with sufficient metadata (company, role, location, URL).
 4. **Resolver usage.** Codex routes concrete LinkedIn URLs through `resolve-linkedin.mjs` and Indeed URLs through `resolve-indeed.mjs`. It does NOT scrape those platforms directly.
 5. **Dedup consistency.** Codex records duplicates and expired results consistently against `scan-history.tsv`, `pipeline.md`, and `applications.md`.
-6. **Subagent discipline.** Sidecar tasks (per source group) only. Parent owns dedup, liveness, and writes.
+6. **Subagent discipline.** Use sidecar tasks (per source group) by default. Parent owns dedup, liveness, and writes.
 7. **Token discipline without coverage loss.** Use `rg`/`grep` for dedup against large data files instead of loading them into context. Do NOT skip a level to save tokens.
 8. **Summary completeness.** Codex produces the final summary required by `modes/scan-codex.md`, including `Subagents available: yes/no`, `Subagents used: yes/no`, blocked sources, and fallback paths attempted.
 
@@ -60,7 +61,7 @@ Use `modes/scan-codex.md` "Required Final Summary" for blocker reporting. The sm
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Level 1 skipped | Browser tool unavailable or `scan-codex.md` not loaded | Verify the Codex runtime exposes a browser/Playwright tool. Verify the skill router loads `modes/scan-codex.md` for `scan`. |
+| Level 1 skipped | Browser tool unavailable or `scan-codex.md` not loaded | Verify the Codex runtime exposes a browser/Playwright tool. Verify `$career-ops-scan` loads `modes/scan-codex.md`. |
 | Level 3 skipped entirely | Codex search tool unavailable or blocked | Attempt the Level 3 fallback chain (`r.jina.ai`, direct portal search, public boards). Record outcomes. |
 | Only `node scan.mjs` ran (Level 2 only) | Codex degraded to ATS-only mode | Ensure `modes/scan-codex.md` is in context. Re-prompt with `Levels 1, 2, 3 are required`. |
 | LinkedIn / Indeed URLs scraped directly | Resolvers not invoked | Verify `resolve-linkedin.mjs` and `resolve-indeed.mjs` exist and are executable. |

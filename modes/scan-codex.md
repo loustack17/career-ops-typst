@@ -2,7 +2,7 @@
 
 This file is the Codex runtime adapter for `modes/scan.md`. It does NOT redesign scan. It ensures Codex executes the canonical scan strategy with the same coverage as the Claude Code reference run.
 
-Load this file alongside `modes/scan.md` when running `$career-ops scan` under Codex.
+Load this file alongside `modes/scan.md` when running `$career-ops-scan` under Codex.
 
 ## Runtime Contract
 
@@ -44,9 +44,9 @@ Agent(
 
 Under Codex, do **not** wrap the entire scan in a single subagent. Codex subagents are best used as **bounded sidecars**, not as scan orchestrators. The parent agent owns the orchestration, dedup, and writes.
 
-Codex policy gate: dispatch subagents only when the user explicitly asks for subagents, delegation, or parallel agent work. If the user only asks for `$career-ops scan`, run inline and report `Subagents available: yes; used: no`.
+For Career-Ops scan parity with the Claude Code reference flow, dispatch scan sidecars by default when Codex exposes a subagent / delegate-task primitive. `$career-ops-scan` itself is explicit authorization for scan subagents because the canonical mode is agentic. If subagents are unavailable in the current runtime, run inline and report the capability gap.
 
-When the user explicitly authorizes subagents and Codex exposes a subagent / delegate-task primitive, dispatch sidecar work as follows:
+When Codex exposes a subagent / delegate-task primitive, dispatch sidecar work as follows:
 
 | Sidecar workload | Subagent scope |
 |---|---|
@@ -56,7 +56,7 @@ When the user explicitly authorizes subagents and Codex exposes a subagent / del
 | LinkedIn/Indeed enrichment | One subagent per concrete URL group (resolver-only, no pipeline writes) |
 | Fallback investigation | One subagent per blocked search source to attempt the Level 3 fallback chain |
 
-If subagents are unavailable or not explicitly authorized, run all phases inline and note that in the final summary.
+If subagents are unavailable, run all phases inline and note that in the final summary. If the user explicitly says not to use subagents, respect that and run inline.
 
 ## Parent Agent Ownership
 
@@ -102,7 +102,7 @@ If the Codex search tool returns 403, timeout, challenge, empty results, or is u
    - Lever: `https://jobs.lever.co/{company}?search={terms}`
    - Workday: navigate to the configured corporate careers URL.
    - SmartRecruiters: navigate to the configured company careers URL.
-3. **Public job boards** (treat as discovery only -- still route through resolvers if results are LinkedIn/Indeed):
+3. **Public job boards** (treat as discovery only -- still route through resolvers if results are LinkedIn/Indeed). Cap attempts per query and record skipped fallback breadth:
    - DuckDuckGo: `https://duckduckgo.com/?q={encoded_query}`
    - Bing: `https://www.bing.com/search?q={encoded_query}`
    - Sector boards from `portals.yml`.
@@ -118,7 +118,7 @@ LinkedIn and Indeed URLs skip browser-based liveness; use the resolver scripts.
 
 ## Smoke Test Constraint
 
-When the user asks for a smoke test (e.g. `$career-ops scan smoke test only, no writes`), do NOT modify any of:
+When the user asks for a smoke test (e.g. `$career-ops-scan smoke test only, no writes`), do NOT modify any of:
 
 - `data/pipeline.md`
 - `data/scan-history.tsv`
