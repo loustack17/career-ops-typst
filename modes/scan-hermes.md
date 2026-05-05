@@ -13,20 +13,20 @@ A complete scan has three levels. **All three must be attempted.**
 For each enabled company in `portals.yml` with a `careers_url`:
 1. Use `browser_navigate` to open the careers page.
 2. Use `browser_snapshot` to read the page content.
-3. Extract job postings that match the user's target roles (from `config/profile.yml` `title_filter.positive`).
+3. Extract job postings matching the user's target roles (from `config/profile.yml` `title_filter.positive`).
 4. Collect posting titles, locations, and application URLs.
 
 **Do not skip Level 1.** This is the primary discovery mechanism for tracked companies.
 
 ### Level 2: ATS/API Supplement
 
-Run `node scan.mjs` to hit Greenhouse, Ashby, and Lever job board APIs directly. These return structured JSON with zero LLM cost.
-
 ```bash
 node scan.mjs
 ```
 
 `scan.mjs` reads `portals.yml` and `config/profile.yml` automatically. It outputs results to `data/scan-history.tsv` and prints discovered URLs to stdout.
+
+**Important:** When using subagents for Level 2, run `node scan.mjs --dry-run` in the subagent to collect URLs without writing to the pipeline. The parent agent collects Level 2 results and merges them through dedup before writing to the pipeline.
 
 ### Level 3: Search Discovery
 
@@ -45,7 +45,7 @@ When Hermes `delegate_task` is available, split scan work across source groups:
 | Source group | Subagent scope |
 |---|---|
 | Tracked companies (Level 1) | One subagent per 3-5 companies |
-| ATS/API scan (Level 2) | Single subagent running `node scan.mjs` |
+| ATS/API scan (Level 2) | Single subagent running `node scan.mjs --dry-run` |
 | Search queries (Level 3) | One subagent per 3-5 queries |
 | LinkedIn/Indeed resolvers | Separate subagents for each concrete URL |
 
@@ -74,8 +74,6 @@ Before adding a posting to the pipeline (except LinkedIn and Indeed URLs):
 For LinkedIn and Indeed URLs, use the resolver scripts instead of browser verification (these platforms block bots).
 
 ## LinkedIn & Indeed Resolvers
-
-Route concrete URLs through the resolver scripts:
 
 ```bash
 node resolve-linkedin.mjs '<url>' --add-to-pipeline --keep-lead --title '<title>' --company '<company>'
@@ -108,18 +106,18 @@ Otherwise, discard the result and report it in the summary.
 
 ## Final Summary Format
 
-After completing the scan, produce a summary that includes ALL of the following:
+After completing the scan, produce a summary including ALL of:
 
-- **Companies scanned** (Level 1): list each company and how many postings found
+- **Companies scanned** (Level 1): each company and postings found
 - **ATS/API count** (Level 2): total jobs returned by `scan.mjs`
-- **Search queries attempted** (Level 3): each query and how many results
-- **New active JDs added**: count and list of postings added to the pipeline
-- **Duplicates skipped**: count of URLs already in scan-history/pipeline/applications
-- **Expired removed or skipped**: count of postings that were no longer active
-- **Blocked sources**: list of failed Level 1 or Level 3 attempts with error details
+- **Search queries attempted** (Level 3): each query and result count
+- **New active JDs added**: postings added to the pipeline
+- **Duplicates skipped**: URLs already in scan-history/pipeline/applications
+- **Expired removed or skipped**: postings no longer active
+- **Blocked sources**: failed Level 1 or Level 3 attempts with error details
 - **Fallback paths used**: which fallback methods succeeded
 - **LinkedIn/Indeed resolver outcomes**: each URL processed and its result
-- **Files modified**: list of files written to (pipeline.md, scan-history.tsv, etc.)
+- **Files modified**: files written to (pipeline.md, scan-history.tsv, etc.)
 
 ## Debugging
 
