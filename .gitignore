@@ -62,5 +62,3 @@ package-lock.json
 dashboard/dashboard
 *.bak
 linkedin-batch.txt
-reports/2026-*
-output/2026-*

@@ -44,17 +44,19 @@ Agent(
 
 Under Codex, do **not** wrap the entire scan in a single subagent. Codex subagents are best used as **bounded sidecars**, not as scan orchestrators. The parent agent owns the orchestration, dedup, and writes.
 
-When Codex exposes a subagent / delegate-task primitive, dispatch sidecar work as follows:
+Codex policy gate: dispatch subagents only when the user explicitly asks for subagents, delegation, or parallel agent work. If the user only asks for `$career-ops scan`, run inline and report `Subagents available: yes; used: no`.
+
+When the user explicitly authorizes subagents and Codex exposes a subagent / delegate-task primitive, dispatch sidecar work as follows:
 
 | Sidecar workload | Subagent scope |
 |---|---|
 | Level 1 careers pages | One subagent per 3-5 companies; each returns a list of `{company, title, url, location}` |
-| Level 2 direct ATS calls | One subagent per provider group when `node scan.mjs` does not already cover the company |
+| Level 2 direct ATS calls | Parent runs `node scan.mjs --dry-run` once; subagents only inspect configured APIs not covered by `scan.mjs` |
 | Level 3 search queries | One subagent per 3-5 queries; each returns raw search results with provenance |
 | LinkedIn/Indeed enrichment | One subagent per concrete URL group (resolver-only, no pipeline writes) |
 | Fallback investigation | One subagent per blocked search source to attempt the Level 3 fallback chain |
 
-If subagents are unavailable, run all phases inline and note that delegation was unavailable in the final summary.
+If subagents are unavailable or not explicitly authorized, run all phases inline and note that in the final summary.
 
 ## Parent Agent Ownership
 
@@ -75,9 +77,9 @@ Do not load full `data/scan-history.tsv`, `data/pipeline.md`, or `data/applicati
 For dedup:
 
 - Build the candidate set in memory.
-- Read `data/scan-history.tsv` and grep for the candidate URLs (or stream-match) -- do not load the full file into context unless the file is small.
-- Read `data/pipeline.md` for any matching URL or `local:jds/...` reference.
-- Read `data/applications.md` for normalized `company + role` matches.
+- Write candidate URLs and normalized `company + role` keys to a temp pattern file.
+- Run one batched `rg -F -f` per dedup source instead of one grep per candidate.
+- Check `data/scan-history.tsv`, `data/pipeline.md`, and `data/applications.md` without loading full files into context unless they are small.
 
 Codex shell can use `rg`, `grep`, or `awk` to filter dedup sources without loading them into the model context.
 
@@ -86,7 +88,7 @@ Codex shell can use `rg`, `grep`, or `awk` to filter dedup sources without loadi
 Apply the canonical procedures in `modes/scan.md` using the Codex tool mapping above. Codex-specific notes:
 
 - **Level 1:** add candidates with source `level1_browser`. On `careers_url` 404 / redirect / JS error, record `careers_url_failure`, try the company's `scan_query` fallback, and flag the URL for `portals.yml` update in the final summary.
-- **Level 2:** run `node scan.mjs` (Greenhouse, Ashby, Lever, Workday, SmartRecruiters). For configured `api:` blocks not covered by `scan.mjs`, call the endpoint directly via the shell/HTTP tool using the parsing conventions in `modes/scan.md`. When delegating Level 2 to a subagent, the subagent runs `node scan.mjs --dry-run`; the parent merges and writes.
+- **Level 2:** run `node scan.mjs --dry-run` once first (Greenhouse, Ashby, Lever, Workday, SmartRecruiters), then run `node scan.mjs` when ready to write. For configured `api:` blocks not covered by `scan.mjs`, call the endpoint directly via the shell/HTTP tool using the parsing conventions in `modes/scan.md`. Delegate only uncovered provider/API blocks; do not make multiple subagents repeat the full scanner.
 - **Level 3:** run the configured Codex search tool. Route LinkedIn through `resolve-linkedin.mjs`, Indeed through `resolve-indeed.mjs`. For other URLs, schedule a sequential liveness check before pipeline writes. If the search tool is blocked, follow the fallback chain below.
 
 ### Level 3 Fallback Chain
@@ -94,7 +96,7 @@ Apply the canonical procedures in `modes/scan.md` using the Codex tool mapping a
 If the Codex search tool returns 403, timeout, challenge, empty results, or is unavailable, do not silently skip Level 3. Attempt the following in order. Stop after the first success per query and record outcomes for the summary.
 
 1. **`r.jina.ai` readable fetch.** Fetch search result pages or known job board search URLs through `https://r.jina.ai/https://...`. This bypasses JS rendering and most anti-bot.
-2. **Direct portal search URLs** for tracked companies:
+2. **Direct portal search URLs** for companies associated with the failed query or configured matching portal slugs. Cap attempts per query and record skipped fallback breadth:
    - Ashby: `https://jobs.ashbyhq.com/{company}?search={terms}`
    - Greenhouse: `https://job-boards.greenhouse.io/{company}?query={terms}`
    - Lever: `https://jobs.lever.co/{company}?search={terms}`
@@ -128,37 +130,13 @@ Report what would have been added, duplicated, expired, or blocked. See `docs/CO
 
 ## Required Final Summary
 
-End every Codex scan with the same structured summary that `modes/scan.md` calls for, plus Codex-specific fields:
+End every Codex scan with the same structured summary that `modes/scan.md` calls for, plus these Codex-specific fields:
 
 ```text
-Codex Agentic Scan Summary -- YYYY-MM-DD
-
 Runtime: codex (model: <model>)
 Subagents available: yes/no
-Portals config: portals.yml
-Tracked companies attempted: N
-Search queries attempted: N
-Level 1 candidates: N
-Level 2 candidates: N
-Level 3 candidates: N
+Subagents used: yes/no
 Level 3 fallback attempts: list
-Added to pipeline: N
-Skipped duplicates: N
-Skipped title/location/level: N
-Expired: N
-Blocked / manual verify: N
-
-Added:
-- {company} | {title} | {location} | {source} | {url or local:jds/...}
-
-Blocked sources:
-- {source} | {reason} | {fallback_attempted} | {next_action}
-
-Files modified:
-- data/pipeline.md (+N lines)
-- data/scan-history.tsv (+N rows)
-
-Next: Run $career-ops pipeline on the new candidates.
 ```
 
 If subagents were unavailable, say so. If Level 3 was blocked and no fallback succeeded, list every fallback attempt and its outcome explicitly. Honest blocker reporting is better than false parity claims.

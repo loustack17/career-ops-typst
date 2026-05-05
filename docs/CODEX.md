@@ -30,7 +30,7 @@ LinkedIn and Indeed URLs go through the local resolvers, never through direct br
 
 ## Behavior and Subagents
 
-For never-submit, tracker writes, report headers, and personalization placement, see `AGENTS.md` "CRITICAL Rules". For Codex subagent dispatch and parent-vs-sidecar ownership, see `.codex/skills/career-ops/SKILL.md` "Codex Subagent Guidance" and `modes/scan-codex.md` "Parent Agent Ownership".
+For never-submit, tracker writes, report headers, and personalization placement, see `AGENTS.md` "CRITICAL Rules". For scan subagent dispatch and parent-vs-sidecar ownership, see `modes/scan-codex.md`.
 
 ## Superpowers
 
@@ -57,43 +57,17 @@ cd dashboard && go build ./...
 
 Run `node update-system.mjs check` to silently check for upstream updates. The Codex skill router handles `$career-ops update` for explicit checks.
 
-## LinkedIn Helper
+## LinkedIn / Indeed Helpers
 
-Use the local resolver when a LinkedIn job page is visible but the normal scan flow cannot safely turn it into a pipeline item.
+Use local resolvers when LinkedIn or Indeed URLs are visible but the normal scan flow cannot safely turn them into pipeline items. For the complete script reference, see `docs/SCRIPTS.md`.
 
 ```bash
 node resolve-linkedin.mjs 'https://www.linkedin.com/jobs/view/4383142038/' --json
 node resolve-linkedin.mjs 'https://www.linkedin.com/jobs/search-results/?currentJobId=4383142038&keywords=DevOps%20Engineer' --add-to-pipeline
 node resolve-linkedin.mjs 'https://www.linkedin.com/jobs/view/4383142038/' --keep-lead --title 'Platform Engineer - Toronto' --company 'Validus Risk Management'
-```
-
-The resolver:
-- normalizes `search-results?currentJobId=...` and `jobs/view/...` URLs to a canonical `jobs/view/{id}` URL
-- extracts public job details with Playwright
-- writes a local JD into `jds/`
-- optionally appends `local:jds/...` to `data/pipeline.md`
-- can preserve a blocked or low-detail lead in `On Hold -- Manual Verify` when `--keep-lead --title --company` are provided
-
-This keeps the existing `pipeline` mode unchanged. After a successful resolve, run the normal `$career-ops pipeline` flow.
-
-For automated scans, `modes/scan.md` treats LinkedIn as a Level 3 discovery source only. If scan discovers a concrete LinkedIn job URL, it should call `resolve-linkedin.mjs --add-to-pipeline` automatically instead of adding the raw LinkedIn URL.
-
-## Indeed Helper
-
-Use the local resolver when an Indeed job URL is visible but the normal scan flow cannot safely normalize `jk` / `vjk` URLs.
-
-```bash
 node resolve-indeed.mjs 'https://ca.indeed.com/viewjob?jk=2058c3042916c01c' --json
 node resolve-indeed.mjs 'https://ca.indeed.com/?vjk=2058c3042916c01c&advn=4357064039121098' --add-to-pipeline
 node resolve-indeed.mjs 'https://ca.indeed.com/?vjk=2058c3042916c01c&advn=4357064039121098' --keep-lead --title 'DevOps Engineer' --company 'Example Co'
 ```
 
-The resolver:
-- normalizes `vjk` and `jk` URLs to a canonical `viewjob?jk=...` URL
-- extracts public job details with Playwright when available
-- detects Indeed / Cloudflare blocking explicitly
-- writes a local JD into `jds/`
-- optionally appends `local:jds/...` to `data/pipeline.md`
-- can preserve a blocked lead in `On Hold -- Manual Verify` when `--keep-lead --title --company` are provided
-
-For automated scans, `modes/scan.md` treats Indeed results the same way: if scan discovers a concrete Indeed job URL, it should call `resolve-indeed.mjs --add-to-pipeline` instead of adding the raw Indeed URL.
+Resolvers normalize public URLs, write local JDs into `jds/`, optionally append `local:jds/...` to `data/pipeline.md`, and preserve blocked leads with `--keep-lead --title --company`. Automated scans must call the resolver instead of adding raw LinkedIn or Indeed URLs.

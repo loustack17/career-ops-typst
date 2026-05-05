@@ -89,41 +89,13 @@ Tip: Pasting a job URL or full JD runs the full pipeline.
 
 Keep the printed menu short. Do not append per-mode descriptions beyond the lines above.
 
-## Context Loading Conventions
+## Context Loading
 
-- Modes that require `_shared.md` first: `auto-pipeline`, `oferta`, `ofertas`, `contacto`, `apply`, `pdf`, `latex`, `pipeline`, `scan`, `batch`.
-- Standalone modes (skip `_shared.md`): `tracker`, `deep`, `training`, `project`, `patterns`, `followup`, `interview-prep`.
-- `scan` always pairs `modes/scan.md` with `modes/scan-codex.md`.
-- `oferta` and `auto-pipeline` always pair their mode file with `cv.md`, `config/profile.yml`, and `modes/_profile.md`.
-- `pdf` always pairs with `cv.md`.
-
-Read `config/profile.yml` `language.modes_dir` if present (e.g., `modes/de`, `modes/fr`, `modes/ja`, `modes/pt`, `modes/ru`) and load locale equivalents instead of the default `modes/`.
+Use the routing table above as the source of truth. If `config/profile.yml` defines `language.modes_dir`, load the locale equivalent instead of the default `modes/` file.
 
 ## Codex Subagent Guidance
 
-Use Codex subagents only for bounded sidecar tasks. Do not delegate the main flow.
-
-Good uses:
-- Independent source-group research (e.g., one subagent per 3-5 companies for Level 1 careers pages).
-- Code review of a small diff.
-- Resolver investigation (LinkedIn / Indeed lead enrichment).
-- Fallback source analysis when WebSearch is blocked.
-- Verification tasks against a fixed URL list.
-
-Bad uses:
-- Full scan orchestration.
-- Tasks that need user interaction.
-- Broad writes across shared data files (`data/*`, `applications.md`, `pipeline.md`, `scan-history.tsv`).
-- Urgent blocking work the parent agent needs immediately.
-
-Parent agent always owns:
-- Final dedup decisions.
-- Liveness classification.
-- Writes to `data/pipeline.md` and `data/scan-history.tsv`.
-- TSV writes to `batch/tracker-additions/` and the call to `node merge-tracker.mjs`.
-- The final summary message to the user.
-
-See `modes/scan-codex.md` for the scan-specific subagent contract.
+Use Codex subagents only for bounded sidecar tasks. Do not delegate the main flow, user interaction, or broad writes to shared data files. See `modes/scan-codex.md` for scan-specific ownership and dispatch rules.
 
 ## Superpowers
 

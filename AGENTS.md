@@ -4,21 +4,7 @@ This file is auto-loaded by Codex as persistent project context. It is the Codex
 
 ## Primary Entrypoint -- `$career-ops`
 
-The Codex command center is the `$career-ops` skill at `.codex/skills/career-ops/SKILL.md`. It owns subcommand routing and context loading:
-
-```text
-$career-ops                       Show menu
-$career-ops {URL or JD}           AUTO-PIPELINE: evaluate + report + PDF + tracker
-$career-ops oferta {URL or JD}    Evaluate only (alias: evaluate)
-$career-ops scan                  Agentic portal scan
-$career-ops pipeline              Process pending URLs
-$career-ops apply                 Live application assistant
-$career-ops pdf                   Generate ATS-optimized CV
-$career-ops update                Check for upstream system updates
-... (full menu in the skill router)
-```
-
-Spanish canonical names (`oferta`, `ofertas`, `contacto`) match Claude Code. English aliases (`evaluate`, `compare`, `contact`) are convenience.
+The Codex command center is the `$career-ops` skill at `.codex/skills/career-ops/SKILL.md`. It owns subcommand routing and context loading.
 
 For the full routing table, scan expectations, subagent guidance, and verification commands, see `docs/CODEX.md`.
 
@@ -42,7 +28,7 @@ Read `DATA_CONTRACT.md` for the full user/system file split. Codex must reuse th
 
 ## Update Check
 
-On session start, run silently: `node update-system.mjs check`. Act only on `update-available`. Other statuses (`up-to-date`, `dismissed`, `offline`, `no-remote-version`) are silent.
+On the first `$career-ops` invocation, or when the user asks for updates, run silently: `node update-system.mjs check`. Act only on `update-available`. Other statuses (`up-to-date`, `dismissed`, `offline`, `no-remote-version`) are silent.
 
 ## Codex-Specific Setup
 
