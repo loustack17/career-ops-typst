@@ -1,9 +1,9 @@
 ---
 name: career-ops
 description: AI job search command center -- evaluate offers, generate CVs, scan portals, track applications
-arguments: mode # Claude Code specific
-user-invocable: true
-argument-hint: "[scan | deep | pdf | oferta | ofertas | apply | batch | tracker | pipeline | contacto | training | project | interview-prep | update]"
+arguments: mode # Claude Code; ignored by Codex/Hermes/Gemini/Qwen
+user-invocable: true # Claude Code; ignored by others
+argument-hint: "[scan | deep | pdf | oferta | ofertas | apply | batch | tracker | pipeline | contacto | training | project | interview-prep | update]" # Claude Code; ignored by others
 license: MIT
 ---
 
@@ -41,30 +41,30 @@ If `$mode` is not a sub-command AND doesn't look like a JD, show discovery.
 
 ## Discovery Mode (no arguments)
 
-Show this menu:
+Show this menu. Use your CLI's invocation prefix (`/career-ops` for CC/Hermes, `$career-ops` for Codex, `/career-ops-{sub}` for OpenCode/Gemini):
 
 ```
 career-ops -- Command Center
 
 Available commands:
-  /career-ops {JD}      → AUTO-PIPELINE: evaluate + report + PDF + tracker (paste text or URL)
-  /career-ops pipeline  → Process pending URLs from inbox (data/pipeline.md)
-  /career-ops oferta    → Evaluation only A-F (no auto PDF)
-  /career-ops ofertas   → Compare and rank multiple offers
-  /career-ops contacto  → LinkedIn power move: find contacts + draft message
-  /career-ops deep      → Deep research prompt about company
-  /career-ops interview-prep → Generate company-specific interview prep doc
-  /career-ops pdf       → PDF only, ATS-optimized CV
-  /career-ops training  → Evaluate course/cert against North Star
-  /career-ops project   → Evaluate portfolio project idea
-  /career-ops tracker   → Application status overview
-  /career-ops apply     → Live application assistant (reads form + generates answers)
-  /career-ops scan      → Scan portals and discover new offers
-  /career-ops batch     → Batch processing with parallel workers
-  /career-ops patterns  → Analyze rejection patterns and improve targeting
-  /career-ops followup  → Follow-up cadence tracker: flag overdue, generate drafts
+  {invoke} {JD}          → AUTO-PIPELINE: evaluate + report + PDF + tracker (paste text or URL)
+  {invoke} pipeline      → Process pending URLs from inbox (data/pipeline.md)
+  {invoke} oferta        → Evaluation only A-F (no auto PDF)
+  {invoke} ofertas       → Compare and rank multiple offers
+  {invoke} contacto      → LinkedIn power move: find contacts + draft message
+  {invoke} deep          → Deep research prompt about company
+  {invoke} interview-prep → Generate company-specific interview prep doc
+  {invoke} pdf           → PDF only, ATS-optimized CV
+  {invoke} training      → Evaluate course/cert against North Star
+  {invoke} project       → Evaluate portfolio project idea
+  {invoke} tracker       → Application status overview
+  {invoke} apply         → Live application assistant (reads form + generates answers)
+  {invoke} scan          → Scan portals and discover new offers
+  {invoke} batch         → Batch processing with parallel workers
+  {invoke} patterns      → Analyze rejection patterns and improve targeting
+  {invoke} followup      → Follow-up cadence tracker: flag overdue, generate drafts
 
-Inbox: add URLs to data/pipeline.md → /career-ops pipeline
+Inbox: add URLs to data/pipeline.md → {invoke} pipeline
 Or paste a JD directly to run the full pipeline.
 ```
 
@@ -85,11 +85,10 @@ Read `modes/{mode}.md`
 Applies to: `tracker`, `deep`, `interview-prep`, `training`, `project`, `patterns`, `followup`
 
 ### Modes delegated to subagent:
-For `scan`, `apply` (with Playwright), and `pipeline` (3+ URLs): launch as Agent with the content of `_shared.md` + `modes/{mode}.md` injected into the subagent prompt.
+For `scan`, `apply` (with Playwright), and `pipeline` (3+ URLs): launch a subagent with the content of `_shared.md` + `modes/{mode}.md` injected into the subagent prompt. Use your CLI's spawn mechanism (`Agent` in CC/OpenCode, `delegate_task` in Hermes/Codex).
 
 ```
-Agent(
-  subagent_type="general-purpose",
+subagent(
   prompt="[content of modes/_shared.md]\n\n[content of modes/{mode}.md]\n\n[invocation-specific data]",
   description="career-ops {mode}"
 )
