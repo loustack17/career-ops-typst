@@ -33,20 +33,27 @@
 #let page-margin = (
   top: 1in,
   bottom: 1in,
-  left: 1in,
-  right: 1in,
+  left: 1.25in,
+  right: 1.25in,
 )
 
 // === Fonts ===
-#let body-font = ("Georgia",)
-#let body-size = 11pt
-#let body-leading = 2pt
+#let body-font = ("Inter",)
+#let name-font = ("Inter",)
+#let name-size = 20pt
+#let name-weight = 300
+#let contact-size = 9.5pt
+#let body-size = 10.5pt
+#let contact-sep-gap = 5pt
 
 // === Colors ===
 #let text-color = rgb("#1a1a1a")
+#let name-color = rgb("#1a1a1a")
+#let contact-color = rgb("#555555")
+#let contact-sep-color = rgb("#999999")
 
 // ══════════════════════════════════════════
-// COVER LETTER — NA business letter format (block style)
+// COVER LETTER — IT industry standard format
 // ══════════════════════════════════════════
 
 #set page(
@@ -56,18 +63,29 @@
 )
 
 #set text(font: body-font, size: body-size, fill: text-color)
-#set par(justify: false, leading: body-leading)
-#set block(spacing: 0pt, above: 0pt, below: 0pt)
+#set par(justify: false, leading: 2pt, first-line-indent: 0pt)
+#set block(spacing: 6pt, above: 0pt, below: 0pt)
 
-// — Sender block: name, then each contact on its own line —
-#block(below: 0pt)[
-  #text(weight: 700)[#identity.full_name]
-]
-#for contact in identity.contacts [
-  #block(below: 0pt)[#contact.display]
-]
-#if identity.location != "" [
-  #block(below: 0pt)[#identity.location]
+// — Header: centered name, then pipe-separated contact row —
+#align(center)[
+  #block(below: 4pt)[
+    #text(font: name-font, size: name-size, weight: name-weight, fill: name-color)[#identity.full_name]
+  ]
+  #block(below: 0pt)[
+    #set text(font: body-font, size: contact-size, fill: contact-color)
+    #for (index, contact) in identity.contacts.enumerate() [
+      #if contact.href != "" [
+        #link(contact.href)[#contact.display]
+      ] else [
+        #contact.display
+      ]
+      #if index + 1 < identity.contacts.len() [
+        #h(contact-sep-gap)
+        #text(fill: contact-sep-color)[|]
+        #h(contact-sep-gap)
+      ]
+    ]
+  ]
 ]
 
 // — Date —
@@ -86,12 +104,12 @@
 
 // — Body paragraphs —
 #for paragraph in data.letter.body [
-  #v(1em)
+  #v(0.8em)
   #block(below: 0pt)[#paragraph]
 ]
 
 // — Closing —
-#v(1em)
+#v(0.8em)
 #block(below: 0pt)[#data.letter.closing]
 
 // — Typed name —

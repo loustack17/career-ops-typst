@@ -15,16 +15,16 @@
         "display": "louchang.dev@outlook.com"
       },
       {
-        "href": "tel:+16476867427",
-        "display": "+1-(647)-686-7427"
-      },
-      {
         "href": "https://linkedin.com/in/lou-chang",
         "display": "linkedin.com/in/lou-chang"
       },
       {
         "href": "https://loustack.dev",
         "display": "loustack.dev"
+      },
+      {
+        "href": "https://github.com/loustack17",
+        "display": "github.com/loustack17"
       }
     ]
   },
@@ -38,9 +38,9 @@
     ],
     "salutation": "Dear Hiring Manager,",
     "body": [
-      "I am writing to express my interest in the Platform Engineer position at Example Corp. With over five years of experience building delivery infrastructure and backend systems across startup and enterprise environments, I am confident in my ability to contribute to your team\u2019s reliability and automation goals.",
-      "Most recently, I designed the infrastructure, environment model, and CI/CD strategy to bring a startup from proof-of-concept to production, cutting provisioning time from over two hours to under ten minutes. This work involved migrating from AWS to GCP using Terraform with identity-based deployments, hardening release pipelines with quality gates and deploy-on-merge automation, and building backend services with Python, FastAPI, and PostgreSQL. At Duotify, I managed delivery infrastructure across Azure DevOps and self-hosted GitLab CE on Linux, maintaining pipeline reliability while reducing release preparation overhead by over thirty minutes.",
-      "I would welcome the opportunity to discuss how my experience aligns with Example Corp\u2019s platform needs. Thank you for your consideration."
+      "I'm applying for the Platform Engineer role because it matches the direction of my work: improving delivery systems, making infrastructure repeatable, and helping engineering teams operate software with less release and reliability risk.",
+      "In my current contract work, I designed infrastructure, environment strategy, and CI/CD to move a startup from PoC toward production readiness. I used Terraform, identity-based deployments, and dev/prod environment separation to reduce provisioning from more than two hours to under ten minutes, while tightening CI credentials, pinned dependencies, and environment-scoped secrets.",
+      "Before that, at Duotify, I maintained delivery infrastructure across Azure DevOps and self-hosted GitLab CI on Linux, supported AWS EC2/S3/RDS environments, and improved deployment readiness for client-facing systems. That work reduced release preparation overhead by more than 30 minutes and gave me practical experience supporting engineers through pipeline reliability, runner availability, and production constraints."
     ],
     "closing": "Sincerely,"
   }
