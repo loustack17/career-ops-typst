@@ -119,7 +119,7 @@ Update tracker if the offer is already registered: change PDF from ❌ to ✅.
 
 ## Cover Letter
 
-The cover letter template (`templates/cover-letter.typ`) is minimal — only the letter content:
+The cover letter template (`templates/cover-letter-template.typ`) is minimal — only the letter content:
 
 ```
 Dear Hiring Team,
