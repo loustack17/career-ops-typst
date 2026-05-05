@@ -55,6 +55,7 @@ package-lock.json
 
 # Local AI / renderer temp
 .codex
+.hermes/skills/career-ops/career-ops/
 .typst-*/
 dashboard/dashboard
 *.bak
