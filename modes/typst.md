@@ -14,32 +14,31 @@ Export a tailored, ATS-optimized CV as a `.typ` file and compile it to PDF via `
 8. Select top 3-4 most relevant projects for the offer
 9. Reorder experience bullets by JD relevance
 10. Inject keywords naturally into existing achievements
-11. Generate the `.typ` file using `templates/cv.typ` (master) and `templates/cv/*.typ` (sub-templates)
+11. Generate the `.typ` file using `templates/cv-template.typ`
 12. Write to `output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.typ`
 13. Run: `typst compile output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
 14. Report: .typ path, .pdf path, file sizes, section count, keyword coverage %
 
 **Requires:** `typst` on PATH (`brew install typst` or `cargo install typst-cli`).
 
-## Template Structure
+## Template
 
-Master template: `templates/cv.typ`
-Sub-templates: `templates/cv/config.typ`, `templates/cv/education.typ`, `templates/cv/experience.typ`, `templates/cv/header.typ`, `templates/cv/projects.typ`, `templates/cv/shared.typ`, `templates/cv/skills.typ`
+Single file: `templates/cv-template.typ`
 Fonts: `fonts/Inter-*.ttf`
 
 ## Typst Content Generation Rules
 
 ### CV Data Injection
 
-The master template `templates/cv.typ` imports sub-templates. Populate the template with data from `cv.md` and `config/profile.yml`:
+Populate `templates/cv-template.typ` with data from `cv.md` and `config/profile.yml`:
 
-| Section | Source | Typst template |
-|---------|--------|----------------|
-| Header (name, contact, links) | `profile.yml` | `templates/cv/header.typ` |
-| Education | `cv.md` Education section | `templates/cv/education.typ` |
-| Experience | `cv.md` Work Experience section | `templates/cv/experience.typ` |
-| Projects | `cv.md` Projects section (top 3-4) | `templates/cv/projects.typ` |
-| Skills | `cv.md` Technical Skills section | `templates/cv/skills.typ` |
+| Section | Source |
+|---------|--------|
+| Header (name, contact, links) | `profile.yml` |
+| Education | `cv.md` Education section |
+| Experience | `cv.md` Work Experience section |
+| Projects | `cv.md` Projects section (top 3-4) |
+| Skills | `cv.md` Technical Skills section |
 
 ### Keyword Injection (same rules as pdf/latex modes)
 
