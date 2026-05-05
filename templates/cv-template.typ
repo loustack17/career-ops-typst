@@ -1,12 +1,23 @@
 // === Data input ===
 // Accepts: --input payload=path/to/payload.json (preferred)
-//          or direct file inclusion
+//          or falls back to example payload
 #let data-path = if "payload" in sys.inputs {
   sys.inputs.payload
 } else {
   "../examples/cv-typst-payload.example.json"
 }
 #let data = json(data-path)
+
+// Build identity from data if missing (runtime payload may vary)
+#let identity = if "identity" in data {
+  data.identity
+} else {
+  (
+    full_name: data.meta.candidate_name,
+    location: "",
+    contacts: (),
+  )
+}
 
 // ══════════════════════════════════════════
 // CONFIG — colors, fonts, spacing
@@ -383,7 +394,7 @@
 #set par(justify: false, leading: base-leading)
 #set block(spacing: base-leading)
 
-#render-header(data.identity)
+#render-header(identity)
 
 #if data.summary != "" [
   #render-section-title("PROFESSIONAL SUMMARY")

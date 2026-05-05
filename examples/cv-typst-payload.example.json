@@ -124,23 +124,5 @@
         "Bash"
       ]
     }
-  ],
-  "identity": {
-    "full_name": "Lou Chang",
-    "location": "Toronto, ON",
-    "contacts": [
-      {
-        "href": "mailto:lou@example.com",
-        "display": "lou@example.com"
-      },
-      {
-        "href": "https://linkedin.com/in/louchang",
-        "display": "linkedin.com/in/louchang"
-      },
-      {
-        "href": "https://github.com/loustack17",
-        "display": "github.com/loustack17"
-      }
-    ]
-  }
+  ]
 }
