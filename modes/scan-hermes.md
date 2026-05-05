@@ -4,11 +4,22 @@ This file is the Hermes runtime adapter for `modes/scan.md`. It does NOT redesig
 
 Load this file alongside `modes/scan.md` when running `/career-ops scan` under Hermes.
 
-## Three-Level Scan Enforcement
+## Runtime Contract
 
-A complete scan has three levels. **All three must be attempted.**
+`modes/scan.md` is the canonical scan strategy. Hermes must still attempt all three levels: browser careers pages, ATS/API scan, and search discovery. This file only maps those requirements to Hermes tools, subagents, and fallbacks.
 
-### Level 1: Browser-Driven Company Careers Pages
+## Tool Mapping
+
+| Scan step | Hermes tool path |
+|---|---|
+| Level 1 careers pages | `browser_navigate` + `browser_snapshot` |
+| Level 2 ATS/API | `node scan.mjs`; use `node scan.mjs --dry-run` inside subagents |
+| Level 3 search | `web_search` + `web_extract`, then browser verification |
+| Non-LinkedIn/Indeed liveness | `browser_navigate` + `browser_snapshot` |
+| LinkedIn URLs | `node resolve-linkedin.mjs --add-to-pipeline` |
+| Indeed URLs | `node resolve-indeed.mjs --add-to-pipeline` |
+
+## Level 1: Browser-Driven Company Careers Pages
 
 For each enabled company in `portals.yml` with a `careers_url`:
 1. Use `browser_navigate` to open the careers page.
@@ -18,7 +29,7 @@ For each enabled company in `portals.yml` with a `careers_url`:
 
 **Do not skip Level 1.** This is the primary discovery mechanism for tracked companies.
 
-### Level 2: ATS/API Supplement
+## Level 2: ATS/API Supplement
 
 ```bash
 node scan.mjs
@@ -28,7 +39,7 @@ node scan.mjs
 
 **Important:** When using subagents for Level 2, run `node scan.mjs --dry-run` in the subagent to collect URLs without writing to the pipeline. The parent agent collects Level 2 results and merges them through dedup before writing to the pipeline.
 
-### Level 3: Search Discovery
+## Level 3: Search Discovery
 
 For each `search_queries` entry in `portals.yml`:
 1. Use `web_search` with the query string.
@@ -84,7 +95,7 @@ Do not attempt to scrape LinkedIn or Indeed directly with browser tools.
 
 ## Fallback Behavior When Search Is Blocked
 
-If `web_search` or `browser_navigate` fails for a search query, attempt these fallbacks in order before declaring Level 3 blocked:
+If `web_search` or `browser_navigate` fails for a search query, attempt these fallbacks before declaring Level 3 blocked. Stop after the first successful fallback for that query; otherwise summarize failures by category.
 
 1. **Direct portal search URLs** — construct search URLs for the target ATS/job board and navigate directly.
 2. **Readable fetch mirrors** — use `web_extract` on mirrors or cached versions if available.
@@ -92,13 +103,13 @@ If `web_search` or `browser_navigate` fails for a search query, attempt these fa
 4. **ATS public search pages** — use `browser_navigate` to the ATS company-specific search page.
 5. **User-provided result pages** — ask the user to paste search result URLs.
 
-**Record every blocked source and every fallback attempt in the final summary.**
+Record blocked sources and fallback categories in the final summary.
 
 **Do not silently skip Level 3.** If all fallbacks fail, explicitly report which queries were blocked and why.
 
 ## Uncertain Results
 
-Do not add uncertain results as active postings. Use `on-hold` or `manual-verify` status only when:
+Do not add uncertain results as active postings. Keep them in pipeline as manual-verification leads only when:
 - The source is valuable enough to keep.
 - There is sufficient metadata (company, role, location) to make it actionable.
 

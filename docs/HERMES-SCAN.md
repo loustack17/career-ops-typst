@@ -8,7 +8,7 @@ Run the following prompt in Hermes:
 
 ```text
 Run Career-Ops Hermes scan smoke test only.
-Load HERMES.md, .hermes/skills/career-ops/SKILL.md, modes/_shared.md, modes/scan.md, modes/scan-hermes.md, portals.yml, config/profile.yml, modes/_profile.md, data/scan-history.tsv, data/pipeline.md, data/applications.md.
+Load HERMES.md, .hermes/skills/career-ops/SKILL.md, modes/_shared.md, modes/scan.md, modes/scan-hermes.md, portals.yml, config/profile.yml, and modes/_profile.md.
 Do not run pipeline, evaluate, generate reports, generate PDFs, or modify tracker files.
 Test:
 1. Browser-open two enabled tracked-company careers pages from portals.yml.
@@ -37,17 +37,7 @@ Beyond the smoke test, full Claude Code scan parity requires:
 2. **Quality filtering.** Hermes adds only `active` or `on-hold/manual-verify` JDs with sufficient metadata (company, role, location, URL).
 3. **Resolver usage.** Hermes uses LinkedIn and Indeed resolver scripts for concrete URLs instead of scraping those platforms directly.
 4. **Dedup consistency.** Hermes records duplicates and expired results consistently against `scan-history.tsv`, `pipeline.md`, and `applications.md`.
-5. **Summary completeness.** Hermes produces a final summary detailed enough to audit missed sources, including:
-   - Companies scanned (Level 1)
-   - ATS/API count (Level 2)
-   - Search queries attempted (Level 3)
-   - New active JDs added
-   - Duplicates skipped
-   - Expired removed or skipped
-   - Blocked sources with error details
-   - Fallback paths used
-   - LinkedIn/Indeed resolver outcomes
-   - Files modified
+5. **Summary completeness.** Hermes produces the final summary required by `modes/scan-hermes.md`.
 
 ## What Not To Test
 

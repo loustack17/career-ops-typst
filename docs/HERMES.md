@@ -75,27 +75,18 @@ This shows the command menu. Or go directly to a subcommand:
 
 ## Routing Map
 
-| Command | Aliases | Mode | Files loaded |
-|---------|---------|------|-------------|
-| `/career-ops` | | discovery | `HERMES.md` |
-| `/career-ops evaluate <url/JD>` | `oferta` | oferta | `modes/_shared.md`, `modes/oferta.md`, `cv.md`, `config/profile.yml`, `modes/_profile.md` |
-| `/career-ops scan` | | scan | `modes/_shared.md`, `modes/scan.md`, `modes/scan-hermes.md`, `portals.yml`, `config/profile.yml`, `modes/_profile.md`, `data/scan-history.tsv`, `data/pipeline.md`, `data/applications.md` |
-| `/career-ops pipeline` | | pipeline | `modes/_shared.md`, `modes/pipeline.md`, `modes/auto-pipeline.md`, `modes/oferta.md`, `modes/pdf.md` |
-| `/career-ops apply` | | apply | `modes/_shared.md`, `modes/apply.md` |
-| `/career-ops pdf` | | pdf | `modes/_shared.md`, `modes/pdf.md`, `cv.md` |
-| `/career-ops latex` | | latex | `modes/_shared.md`, `modes/latex.md`, `cv.md` |
-| `/career-ops compare` | `ofertas` | ofertas | `modes/_shared.md`, `modes/ofertas.md` |
-| `/career-ops contact` | `contacto` | contacto | `modes/_shared.md`, `modes/contacto.md` |
-| `/career-ops deep` | | deep | `modes/deep.md` |
-| `/career-ops tracker` | | tracker | `modes/tracker.md` |
-| `/career-ops training` | | training | `modes/training.md` |
-| `/career-ops project` | | project | `modes/project.md` |
-| `/career-ops patterns` | | patterns | `modes/patterns.md` |
-| `/career-ops followup` | | followup | `modes/followup.md` |
-| `/career-ops batch` | | batch | `modes/_shared.md`, `modes/batch.md` |
-| `/career-ops interview-prep` | | interview-prep | `modes/interview-prep.md` |
-| `/career-ops update` | | update | `HERMES.md`, then `node update-system.mjs check` |
-| Paste JD or URL | | auto-pipeline | `modes/_shared.md`, `modes/auto-pipeline.md`, `modes/oferta.md`, `modes/pdf.md`, `cv.md`, `config/profile.yml`, `modes/_profile.md` |
+Canonical routing lives in `.hermes/skills/career-ops/SKILL.md`. Common commands:
+
+- `/career-ops`
+- `/career-ops scan`
+- `/career-ops pipeline`
+- `/career-ops evaluate <url/JD>` or `/career-ops oferta <url/JD>`
+- `/career-ops compare` or `/career-ops ofertas`
+- `/career-ops contact` or `/career-ops contacto`
+- `/career-ops apply`
+- `/career-ops pdf`
+- `/career-ops batch`
+- paste a JD or URL to run auto-pipeline
 
 ## Behavioral Rules
 
@@ -107,7 +98,6 @@ This shows the command menu. Or go directly to a subcommand:
 6. **After each batch**, run `node merge-tracker.mjs`.
 7. **All reports** must include `**URL:**` and `**Legitimacy:**` in the header.
 8. **All statuses** must be canonical (see `templates/states.yml`).
-9. **After each batch of evaluations**, run `node merge-tracker.mjs`.
 
 ## Tool Mapping
 

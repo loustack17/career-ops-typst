@@ -10,18 +10,16 @@
 
 1. **NEVER submit an application** without the user reviewing it first. Fill forms, draft answers, generate PDFs — but always STOP before Submit/Send/Apply.
 2. **NEVER trust `web_extract` alone** to verify if an offer is still active. Use `browser_navigate` + `browser_snapshot`. Exception: batch mode, mark `**Verification:** unconfirmed (batch mode)`.
-3. **NEVER edit `applications.md` to ADD entries** — write TSV in `batch/tracker-additions/` and run `node merge-tracker.mjs`.
-4. **NEVER create new entries** in applications.md if company+role already exists. Update the existing entry.
+3. **NEVER edit `applications.md` to ADD entries** — use TSV in `batch/tracker-additions/` and `node merge-tracker.mjs`.
+4. **NEVER create duplicate company+role entries** in applications.md. Update existing entries.
 5. All reports MUST include `**URL:**` and `**Legitimacy:**` in the header.
 6. All statuses MUST be canonical (see `templates/states.yml`).
-7. After each batch of evaluations, run `node merge-tracker.mjs`.
+7. After each evaluation batch, run `node merge-tracker.mjs`.
 8. **Data Contract:** User customization goes in `modes/_profile.md` or `config/profile.yml`. NEVER put user-specific content in `modes/_shared.md`.
 
 ## Data Contract (CRITICAL)
 
-**User Layer (NEVER auto-updated):** `cv.md`, `config/profile.yml`, `modes/_profile.md`, `article-digest.md`, `portals.yml`, `data/*`, `reports/*`, `output/*`, `interview-prep/*`
-
-**System Layer (auto-updatable):** `modes/_shared.md`, mode files, `HERMES.md`, scripts, `dashboard/*`, `templates/*`, `batch/*`
+Read `DATA_CONTRACT.md` for the full user/system file split. Hermes-specific rule: personalization belongs in `config/profile.yml`, `modes/_profile.md`, `article-digest.md`, or `portals.yml`, never in shared mode defaults.
 
 ## Update Check
 
@@ -34,29 +32,7 @@ To rollback: `node update-system.mjs rollback`
 
 ## Pipeline Integrity
 
-1. **NEVER edit applications.md to ADD new entries** — use TSV + `merge-tracker.mjs`
-2. **YES you can edit applications.md to UPDATE** status/notes of existing entries
-3. Reports must include `**URL:**` and `**Legitimacy:**`
-4. Use canonical statuses from `templates/states.yml`: Evaluated, Applied, Responded, Interview, Offer, Rejected, Discarded, SKIP
-5. Health check: `node verify-pipeline.mjs`
-6. Normalize: `node normalize-statuses.mjs`
-7. Dedup: `node dedup-tracker.mjs`
-
-### TSV Format
-
-One TSV per evaluation in `batch/tracker-additions/{num}-{company-slug}.tsv`. 9 tab-separated columns:
-
-```
-{num}\t{date}\t{company}\t{role}\t{status}\t{score}/5\t{pdf_emoji}\t[{num}](reports/{num}-{slug}-{date}.md)\t{note}
-```
-
-Column order: #, date, company, role, **status**, score, pdf, report, notes (status BEFORE score in TSV; applications.md has score before status — the merge script handles this).
-
-### Canonical States
-
-`Evaluated` | `Applied` | `Responded` | `Interview` | `Offer` | `Rejected` | `Discarded` | `SKIP`
-
-No bold, no dates, no extra text in status field.
+Use TSV additions in `batch/tracker-additions/` plus `node merge-tracker.mjs`; never add tracker rows directly. Status values come from `templates/states.yml`. Use `node verify-pipeline.mjs`, `node normalize-statuses.mjs`, and `node dedup-tracker.mjs` for health, normalization, and tracker dedup.
 
 ## Origin
 
@@ -89,28 +65,7 @@ AI-powered job search automation: pipeline tracking, offer evaluation, CV genera
 
 ### Hermes Commands
 
-| Command | Aliases | Description |
-|---------|---------|-------------|
-| `/career-ops` | | Show menu or evaluate JD |
-| `/career-ops evaluate <url/JD>` | `oferta` | Evaluate job offer (A-G) |
-| `/career-ops scan` | | Scan portals for new offers |
-| `/career-ops pipeline` | | Process pending URLs from inbox |
-| `/career-ops compare` | `ofertas` | Compare and rank offers |
-| `/career-ops contact` | `contacto` | LinkedIn outreach |
-| `/career-ops apply` | | Live application assistant |
-| `/career-ops pdf` | | Generate ATS-optimized CV |
-| `/career-ops latex` | | Export CV as LaTeX |
-| `/career-ops deep` | | Deep company research |
-| `/career-ops tracker` | | Application status overview |
-| `/career-ops training` | | Evaluate course/cert |
-| `/career-ops project` | | Evaluate portfolio project idea |
-| `/career-ops patterns` | | Analyze rejection patterns |
-| `/career-ops followup` | | Follow-up cadence tracker |
-| `/career-ops batch` | | Batch processing |
-| `/career-ops interview-prep` | | Interview intelligence |
-| `/career-ops update` | | Check for updates |
-
-Spanish aliases (`oferta`, `ofertas`, `contacto`) match Claude Code. English aliases are convenience only. See `.hermes/skills/career-ops/SKILL.md` for full routing table.
+Use `/career-ops [subcommand]`. Canonical routing lives in `.hermes/skills/career-ops/SKILL.md`. Spanish aliases (`oferta`, `ofertas`, `contacto`) match Claude Code; English aliases are convenience only.
 
 ### Model Guidance
 
@@ -152,15 +107,7 @@ Batch fallback: use `web_extract`, mark report `**Verification:** unconfirmed (b
 
 ## Hermes Superpowers
 
-| Skill | Career-Ops use |
-|-------|---------------|
-| `writing-plans` | Before multi-file adapter changes, migration plans, risky scan changes |
-| `subagent-driven-development` | Scan source splitting, batch processing, resolver verification |
-| `systematic-debugging` | Blocked portals, search failures, liveness false positives, resolver failures |
-| `test-driven-development` | Resolver scripts, liveness logic, parser changes, reusable automation |
-| `requesting-code-review` | Before finalizing adapter changes or scan/pipeline/apply changes |
-
-Superpowers are workflow discipline, not Career-Ops logic. Do not create alternate scoring, tracker, PDF, or scan implementations.
+Use Hermes Superpowers for planning, subagent work, debugging, TDD, and review when the task matches `docs/HERMES-SUPERPOWERS.md`. Superpowers are workflow discipline, not Career-Ops logic.
 
 ## First Run -- Onboarding
 
