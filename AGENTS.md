@@ -4,7 +4,7 @@ This file is auto-loaded by Codex as persistent project context. It is the Codex
 
 ## Primary Entrypoint -- `$career-ops`
 
-The Codex command center is the `$career-ops` skill at `.codex/skills/career-ops/SKILL.md`. It owns subcommand routing and context loading.
+The Codex command center is the `$career-ops` skill at `.agents/skills/career-ops/SKILL.md`. It owns subcommand routing and context loading.
 
 For the full routing table, scan expectations, subagent guidance, and verification commands, see `docs/CODEX.md`.
 

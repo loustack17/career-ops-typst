@@ -1,10 +1,10 @@
 # Codex Setup
 
-Career-Ops supports Codex through `AGENTS.md` (auto-loaded project context) and a Codex skill router at `.codex/skills/career-ops/SKILL.md`.
+Career-Ops supports Codex through `AGENTS.md` (auto-loaded project context) and a Codex skill router at `.agents/skills/career-ops/SKILL.md`.
 
 ## Prerequisites
 
-- A Codex client that auto-loads project `AGENTS.md` and discovers local skills under `.codex/skills/`.
+- A Codex client that auto-loads project `AGENTS.md` and discovers local skills under `.agents/skills/`.
 - Node.js 18+
 - Playwright Chromium for PDF generation and reliable job verification
 - Go 1.21+ if you want the TUI dashboard
@@ -18,9 +18,9 @@ npx playwright install chromium
 
 ## Primary Codex UX -- `$career-ops`
 
-Codex has its own command center, equivalent to Claude Code's `/career-ops`. The skill router at `.codex/skills/career-ops/SKILL.md` owns argument parsing, subcommand routing, the discovery menu, and context loading per mode. It routes into the shared `modes/*` files used by Claude Code, OpenCode, Hermes, and Gemini CLI. Only the router and `modes/scan-codex.md` are Codex-specific.
+Codex has its own command center, equivalent to Claude Code's `/career-ops`. The skill router at `.agents/skills/career-ops/SKILL.md` owns argument parsing, subcommand routing, the discovery menu, and context loading per mode. It routes into the shared `modes/*` files used by Claude Code, OpenCode, Hermes, and Gemini CLI. Only the router and `modes/scan-codex.md` are Codex-specific.
 
-For the full menu, alias list, and routing table, see `.codex/skills/career-ops/SKILL.md`.
+For the full menu, alias list, and routing table, see `.agents/skills/career-ops/SKILL.md`.
 
 ## Codex Scan
 
