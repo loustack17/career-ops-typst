@@ -62,3 +62,5 @@ package-lock.json
 dashboard/dashboard
 *.bak
 linkedin-batch.txt
+.mcp.json
+.playwright-mcp/

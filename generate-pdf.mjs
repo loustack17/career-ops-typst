@@ -260,6 +260,7 @@ function buildContacts(contactMap) {
   const order = [
     ['email', contactMap.email],
     ['linkedin', contactMap.linkedin],
+    ['github', contactMap.github],
     ['portfolio', contactMap.portfolio],
   ];
   return order.map(([label, value]) => parseContactField(label, value)).filter(Boolean);
