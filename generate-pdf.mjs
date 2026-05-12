@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = __dirname;
-const defaultTemplate = join(projectRoot, 'templates', 'cv.typ');
+const defaultTemplate = join(projectRoot, 'templates', 'cv-template.typ');
 const defaultFormat = 'letter';
 const fallbackCvPath = join(projectRoot, 'cv.md');
 const profilePath = join(projectRoot, 'config', 'profile.yml');
@@ -18,7 +18,7 @@ const typstFontAssets = ['dm-sans-latin.woff2', 'space-grotesk-latin.woff2'];
 const outputDir = join(projectRoot, 'output');
 
 function usage() {
-  console.error('Usage: node generate-pdf.mjs <source.(md|json)> [output.pdf] [--payload=override.json] [--template=templates/cv.typ] [--format=letter|a4] [--keep-temp]');
+  console.error('Usage: node generate-pdf.mjs <source.(md|json)> [output.pdf] [--payload=override.json] [--template=templates/cv-template.typ] [--format=letter|a4] [--keep-temp]');
   process.exit(1);
 }
 

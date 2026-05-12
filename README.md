@@ -247,7 +247,7 @@ career-ops/
 │   ├── batch.md                 # Batch processing
 │   └── ...
 ├── templates/
-│   ├── cv.typ                   # ATS-optimized Typst CV template
+│   ├── cv-template.typ          # ATS-optimized Typst CV template
 │   └── cv/                      # Typst CV modules
 │   ├── portals.example.yml      # Scanner config template
 │   └── states.yml               # Canonical statuses

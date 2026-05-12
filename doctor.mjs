@@ -122,12 +122,12 @@ function checkPortals() {
 }
 
 function checkCvTemplate() {
-  if (existsSync(join(projectRoot, 'templates', 'cv.typ'))) {
-    return { pass: true, label: 'templates/cv.typ found' };
+  if (existsSync(join(projectRoot, 'templates', 'cv-template.typ'))) {
+    return { pass: true, label: 'templates/cv-template.typ found' };
   }
   return {
     pass: false,
-    label: 'templates/cv.typ not found',
+    label: 'templates/cv-template.typ not found',
     fix: 'The Typst CV template is required for PDF generation',
   };
 }
