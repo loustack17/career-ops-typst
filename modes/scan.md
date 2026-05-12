@@ -172,6 +172,15 @@ If Indeed returns a Cloudflare-blocked page or does not expose reliable metadata
    - Default level exclusions: Staff, Principal, Lead, Tech Lead, Team Lead, Manager, Director, Head, and Architect titles are `skipped_level` unless the user explicitly asks for stretch roles
    - Senior is allowed only when the JD reads like a 5+ year hands-on IC role, not org-wide ownership or 8-10+ year leadership scope
 
+6b. **Filter by location (optional)** using `location_filter` from `portals.yml`:
+   - If `location_filter` is absent, all locations pass (default behavior)
+   - Empty offer location → pass (do not penalize missing data)
+   - Any `block` keyword present → reject (takes precedence over allow)
+   - Empty `allow` → pass after block checks
+   - Non-empty `allow` → at least one keyword must match
+   - All matches are case-insensitive substring matches
+   - Persist location as the 7th column in `scan-history.tsv` for later audit
+
 7. **Deduplicate** against 3 sources:
    - `scan-history.tsv` → exact URL already seen
    - `applications.md` → normalized company + role already evaluated
