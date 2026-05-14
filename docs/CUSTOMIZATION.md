@@ -33,14 +33,14 @@ Copy from `templates/portals.example.yml` and customize:
 3. **search_queries**: WebSearch queries for job boards (Ashby, Greenhouse, Lever)
 4. **tracked_companies**: Companies to check directly
 
-## CV Template (templates/cv-template.typ)
+## CV Template (templates/cv-template.html)
 
-The Typst template uses these design tokens:
-- **Structure**: Single-file Typst template — all layout, styling, and section rendering in one file
+The HTML template uses these design tokens:
+- **Fonts**: Space Grotesk (headings) + DM Sans (body) -- self-hosted in `fonts/`
 - **Colors**: Cyan primary (`hsl(187,74%,32%)`) + Purple accent (`hsl(270,70%,45%)`)
 - **Layout**: Single-column, ATS-optimized
 
-To customize layout, fonts, or colors, edit `templates/cv-template.typ`.
+To customize fonts/colors, edit the CSS in the template. Update font files in `fonts/` if switching fonts.
 
 ## Negotiation Scripts (modes/_shared.md)
 

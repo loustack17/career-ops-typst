@@ -560,9 +560,8 @@ func UpdateApplicationStatus(careerOpsPath string, app model.CareerApplication, 
 		if !strings.HasPrefix(strings.TrimSpace(line), "|") {
 			continue
 		}
-		matchByReport := app.ReportNumber != "" && strings.Contains(line, fmt.Sprintf("[%s]", app.ReportNumber))
-		matchByNumber := app.ReportNumber == "" && strings.Contains(line, fmt.Sprintf("| %d |", app.Number))
-		if matchByReport || matchByNumber {
+		// Match by report number
+		if app.ReportNumber != "" && strings.Contains(line, fmt.Sprintf("[%s]", app.ReportNumber)) {
 			// Replace the status field
 			lines[i] = replaceStatusInLine(line, app.Status, newStatus)
 			found = true
@@ -571,10 +570,7 @@ func UpdateApplicationStatus(careerOpsPath string, app model.CareerApplication, 
 	}
 
 	if !found {
-		if app.ReportNumber != "" {
-			return fmt.Errorf("application not found: report %s", app.ReportNumber)
-		}
-		return fmt.Errorf("application not found: row %d", app.Number)
+		return fmt.Errorf("application not found: report %s", app.ReportNumber)
 	}
 
 	return os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644)

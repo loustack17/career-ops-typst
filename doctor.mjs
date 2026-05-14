@@ -5,8 +5,7 @@
  * Checks all prerequisites and prints a pass/fail checklist.
  */
 
-import { existsSync, mkdirSync } from 'fs';
-import { spawnSync } from 'child_process';
+import { existsSync, mkdirSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -63,22 +62,6 @@ async function checkPlaywright() {
   }
 }
 
-function checkTypst() {
-  const result = spawnSync('typst', ['--version'], {
-    cwd: projectRoot,
-    encoding: 'utf-8',
-  });
-  if (result.status === 0) {
-    const version = (result.stdout || result.stderr || '').trim().split('\n')[0];
-    return { pass: true, label: `Typst installed${version ? ` (${version})` : ''}` };
-  }
-  return {
-    pass: false,
-    label: 'Typst not installed',
-    fix: 'Install Typst and ensure `typst` is on PATH',
-  };
-}
-
 function checkCv() {
   if (existsSync(join(projectRoot, 'cv.md'))) {
     return { pass: true, label: 'cv.md found' };
@@ -121,15 +104,32 @@ function checkPortals() {
   };
 }
 
-function checkCvTemplate() {
-  if (existsSync(join(projectRoot, 'templates', 'cv-template.typ'))) {
-    return { pass: true, label: 'templates/cv-template.typ found' };
+function checkFonts() {
+  const fontsDir = join(projectRoot, 'fonts');
+  if (!existsSync(fontsDir)) {
+    return {
+      pass: false,
+      label: 'fonts/ directory not found',
+      fix: 'The fonts/ directory is required for PDF generation',
+    };
   }
-  return {
-    pass: false,
-    label: 'templates/cv-template.typ not found',
-    fix: 'The Typst CV template is required for PDF generation',
-  };
+  try {
+    const files = readdirSync(fontsDir);
+    if (files.length === 0) {
+      return {
+        pass: false,
+        label: 'fonts/ directory is empty',
+        fix: 'The fonts/ directory must contain font files for PDF generation',
+      };
+    }
+  } catch {
+    return {
+      pass: false,
+      label: 'fonts/ directory not readable',
+      fix: 'Check permissions on the fonts/ directory',
+    };
+  }
+  return { pass: true, label: 'Fonts directory ready' };
 }
 
 function checkAutoDir(name) {
@@ -157,11 +157,10 @@ async function main() {
     checkNodeVersion(),
     checkDependencies(),
     await checkPlaywright(),
-    checkTypst(),
     checkCv(),
     checkProfile(),
     checkPortals(),
-    checkCvTemplate(),
+    checkFonts(),
     checkAutoDir('data'),
     checkAutoDir('output'),
     checkAutoDir('reports'),

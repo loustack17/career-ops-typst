@@ -23,8 +23,8 @@
      ┌──────▼──────────────────────────────────────────▼──────┐
      │                    Output Pipeline                      │
      │  ┌──────────┐  ┌────────────┐  ┌───────────────────┐  │
-     │  │ Report.md│  │ PDF (Typst │  │ Tracker TSV       │  │
-     │  │ (A-F eval)│  │  compile)  │  │ (merge-tracker)  │  │
+     │  │ Report.md│  │  PDF (HTML  │  │ Tracker TSV       │  │
+     │  │ (A-F eval)│  │  → Puppeteer)│  │ (merge-tracker)  │  │
      │  └──────────┘  └────────────┘  └───────────────────┘  │
      └────────────────────────────────────────────────────────┘
                                │
@@ -78,7 +78,7 @@ article-digest.md        →  Proof points for matching
 config/profile.yml       →  Candidate identity
 portals.yml              →  Scanner configuration
 templates/states.yml     →  Canonical status values
-templates/cv-template.typ → PDF generation template
+templates/cv-template.html → PDF generation template
 ```
 
 ## File Naming Conventions

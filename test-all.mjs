@@ -11,7 +11,7 @@
  *   node test-all.mjs --quick   # Skip dashboard build (faster)
  */
 
-import { spawnSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -28,17 +28,15 @@ function pass(msg) { console.log(`  ✅ ${msg}`); passed++; }
 function fail(msg) { console.log(`  ❌ ${msg}`); failed++; }
 function warn(msg) { console.log(`  ⚠️  ${msg}`); warnings++; }
 
-function run(cmd, opts = {}) {
-  const result = spawnSync('bash', ['-lc', cmd], {
-    cwd: ROOT,
-    encoding: 'utf-8',
-    timeout: 30000,
-    ...opts,
-  });
-  if (result.status === 0) {
-    return (result.stdout || '').trim();
+function run(cmd, args = [], opts = {}) {
+  try {
+    if (Array.isArray(args) && args.length > 0) {
+      return execFileSync(cmd, args, { cwd: ROOT, encoding: 'utf-8', timeout: 30000, ...opts }).trim();
+    }
+    return execSync(cmd, { cwd: ROOT, encoding: 'utf-8', timeout: 30000, ...opts }).trim();
+  } catch (e) {
+    return null;
   }
-  return null;
 }
 
 function fileExists(path) { return existsSync(join(ROOT, path)); }
@@ -52,7 +50,7 @@ console.log('1. Syntax checks');
 
 const mjsFiles = readdirSync(ROOT).filter(f => f.endsWith('.mjs'));
 for (const f of mjsFiles) {
-  const result = run(`node --check ${f}`);
+  const result = run('node', ['--check', f]);
   if (result !== null) {
     pass(`${f} syntax OK`);
   } else {
@@ -74,7 +72,7 @@ const scripts = [
 ];
 
 for (const { name, allowFail } of scripts) {
-  const result = run(`node ${name}`, { stdio: ['pipe', 'pipe', 'pipe'] });
+  const result = run('node', name.split(' '), { stdio: ['pipe', 'pipe', 'pipe'] });
   if (result !== null) {
     pass(`${name} runs OK`);
   } else if (allowFail) {
@@ -162,8 +160,7 @@ const systemFiles = [
   'CLAUDE.md', 'VERSION', 'DATA_CONTRACT.md',
   'modes/_shared.md', 'modes/_profile.template.md',
   'modes/oferta.md', 'modes/pdf.md', 'modes/scan.md',
-  'templates/states.yml', 'templates/cv-template.typ',
-  'fonts/Inter-Regular.ttf',
+  'templates/states.yml', 'templates/cv-template.html',
   '.claude/skills/career-ops/SKILL.md',
 ];
 
@@ -180,7 +177,7 @@ const userFiles = [
   'config/profile.yml', 'modes/_profile.md', 'portals.yml',
 ];
 for (const f of userFiles) {
-  const tracked = run(`git ls-files ${f}`);
+  const tracked = run('git', ['ls-files', f]);
   if (tracked === '') {
     pass(`User file gitignored: ${f}`);
   } else if (tracked === null) {
@@ -203,7 +200,7 @@ const scanExtensions = ['md', 'yml', 'html', 'mjs', 'sh', 'go', 'json'];
 const allowedFiles = [
   // English README + localized translations (all legitimately credit Santiago)
   'README.md', 'README.es.md', 'README.ja.md', 'README.ko-KR.md',
-  'README.pt-BR.md', 'README.ru.md', 'README.zh-TW.md',
+  'README.pt-BR.md', 'README.ru.md',
   // Standard project files
   'LICENSE', 'CITATION.cff', 'CONTRIBUTING.md',
   'package.json', '.github/FUNDING.yml', 'CLAUDE.md', 'AGENTS.md', 'go.mod', 'test-all.mjs',
@@ -212,7 +209,6 @@ const allowedFiles = [
   '.github/SECURITY.md',
   // Dashboard credit string
   'dashboard/internal/ui/screens/pipeline.go',
-  'dashboard/internal/ui/screens/progress.go',
 ];
 
 // Build pathspec for git grep — only scan tracked files matching these

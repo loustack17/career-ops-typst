@@ -101,7 +101,7 @@ Inclure aussi :
 
 ### 1. Sauvegarder le report .md
 
-Sauvegarder l'evaluation complete dans `reports/{YYYY-MM-DD}/{###}-{company-slug}-{YYYY-MM-DD}.md`.
+Sauvegarder l'evaluation complete dans `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 
 - `{###}` = prochain numero sequentiel (3 chiffres, zero-padded)
 - `{company-slug}` = nom d'entreprise en minuscules, sans espaces (utiliser des tirets)

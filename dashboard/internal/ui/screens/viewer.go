@@ -7,8 +7,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
-	"github.com/charmbracelet/x/ansi"
 
 	"github.com/santifer/career-ops/dashboard/internal/theme"
 )
@@ -18,13 +16,12 @@ type ViewerClosedMsg struct{}
 
 // ViewerModel implements an integrated file viewer screen.
 type ViewerModel struct {
-	lines         []string
-	renderedLines []string
-	title         string
-	scrollOffset  int
-	width         int
-	height        int
-	theme         theme.Theme
+	lines        []string
+	title        string
+	scrollOffset int
+	width        int
+	height       int
+	theme        theme.Theme
 }
 
 // NewViewerModel creates a new file viewer for the given path.
@@ -34,38 +31,12 @@ func NewViewerModel(t theme.Theme, path, title string, width, height int) Viewer
 		content = []byte("Error reading file: " + err.Error())
 	}
 
-	var lines []string
-	if len(content) > 0 {
-		lines = strings.Split(string(content), "\n")
-	}
-
-	m := ViewerModel{
-		lines:  lines,
+	return ViewerModel{
+		lines:  strings.Split(string(content), "\n"),
 		title:  title,
 		width:  width,
 		height: height,
 		theme:  t,
-	}
-	m.rebuildRender()
-	return m
-}
-
-// rebuildRender recomputes renderedLines from raw lines using the current width.
-func (m *ViewerModel) rebuildRender() {
-	m.renderedLines = m.renderAll()
-	m.clampScrollOffset()
-}
-
-func (m *ViewerModel) clampScrollOffset() {
-	maxScroll := len(m.renderedLines) - m.bodyHeight()
-	if maxScroll < 0 {
-		maxScroll = 0
-	}
-	if m.scrollOffset > maxScroll {
-		m.scrollOffset = maxScroll
-	}
-	if m.scrollOffset < 0 {
-		m.scrollOffset = 0
 	}
 }
 
@@ -76,7 +47,6 @@ func (m ViewerModel) Init() tea.Cmd {
 func (m *ViewerModel) Resize(width, height int) {
 	m.width = width
 	m.height = height
-	m.rebuildRender()
 }
 
 func (m ViewerModel) Update(msg tea.Msg) (ViewerModel, tea.Cmd) {
@@ -87,7 +57,7 @@ func (m ViewerModel) Update(msg tea.Msg) (ViewerModel, tea.Cmd) {
 			return m, func() tea.Msg { return ViewerClosedMsg{} }
 
 		case "down", "j":
-			maxScroll := len(m.renderedLines) - m.bodyHeight()
+			maxScroll := len(m.lines) - m.bodyHeight()
 			if maxScroll < 0 {
 				maxScroll = 0
 			}
@@ -102,7 +72,7 @@ func (m ViewerModel) Update(msg tea.Msg) (ViewerModel, tea.Cmd) {
 
 		case "pgdown", "ctrl+d":
 			jump := m.bodyHeight() / 2
-			maxScroll := len(m.renderedLines) - m.bodyHeight()
+			maxScroll := len(m.lines) - m.bodyHeight()
 			if maxScroll < 0 {
 				maxScroll = 0
 			}
@@ -122,7 +92,7 @@ func (m ViewerModel) Update(msg tea.Msg) (ViewerModel, tea.Cmd) {
 			m.scrollOffset = 0
 
 		case "end", "G":
-			maxScroll := len(m.renderedLines) - m.bodyHeight()
+			maxScroll := len(m.lines) - m.bodyHeight()
 			if maxScroll < 0 {
 				maxScroll = 0
 			}
@@ -132,7 +102,6 @@ func (m ViewerModel) Update(msg tea.Msg) (ViewerModel, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.rebuildRender()
 	}
 
 	return m, nil
@@ -165,12 +134,41 @@ func (m ViewerModel) renderHeader() string {
 	title := lipgloss.NewStyle().Bold(true).Foreground(m.theme.Blue).Render(m.title)
 
 	right := lipgloss.NewStyle().Foreground(m.theme.Subtext)
+	pos := right.Render(strings.TrimRight(
+		strings.Repeat(" ", max(0, m.width-lipgloss.Width(m.title)-30)),
+		" ",
+	))
+
+	lineInfo := right.Render(
+		strings.Join([]string{
+			"L",
+			strings.TrimSpace(lipgloss.NewStyle().Render(
+				strings.Join([]string{
+					func() string {
+						s := m.scrollOffset + 1
+						if s > len(m.lines) {
+							s = len(m.lines)
+						}
+						return string(rune('0'+s/100%10)) + string(rune('0'+s/10%10)) + string(rune('0'+s%10))
+					}(),
+				}, ""),
+			)),
+			"/",
+			func() string {
+				t := len(m.lines)
+				return string(rune('0'+t/100%10)) + string(rune('0'+t/10%10)) + string(rune('0'+t%10))
+			}(),
+		}, ""),
+	)
+	_ = pos
+	_ = lineInfo
+
 	scroll := right.Render(func() string {
-		if len(m.renderedLines) == 0 {
+		if len(m.lines) == 0 {
 			return ""
 		}
 		pct := 0
-		maxScroll := len(m.renderedLines) - m.bodyHeight()
+		maxScroll := len(m.lines) - m.bodyHeight()
 		if maxScroll > 0 {
 			pct = m.scrollOffset * 100 / maxScroll
 		}
@@ -198,109 +196,57 @@ func (m ViewerModel) renderBody() string {
 	bh := m.bodyHeight()
 	padStyle := lipgloss.NewStyle().Padding(0, 2)
 
-	if len(m.renderedLines) == 0 {
+	if len(m.lines) == 0 {
 		emptyStyle := lipgloss.NewStyle().Foreground(m.theme.Subtext)
 		return padStyle.Render(emptyStyle.Render("(empty file)"))
 	}
 
 	end := m.scrollOffset + bh
-	if end > len(m.renderedLines) {
-		end = len(m.renderedLines)
+	if end > len(m.lines) {
+		end = len(m.lines)
 	}
-	visible := m.renderedLines[m.scrollOffset:end]
+	visible := m.lines[m.scrollOffset:end]
 
-	flat := make([]string, bh)
-	copy(flat, visible)
-
-	return padStyle.Render(strings.Join(flat, "\n"))
-}
-
-// renderAll converts every raw markdown line into visual terminal lines.
-func (m ViewerModel) renderAll() []string {
+	// Render with table block detection
 	var styled []string
 	i := 0
-	for i < len(m.lines) {
-		line := m.lines[i]
-		trimmed := strings.TrimSpace(line)
-
-		if trimmed == "" {
-			styled = append(styled, "")
-			i++
-			continue
-		}
-
-		if isTableLine(line) {
+	for i < len(visible) {
+		if isTableLine(visible[i]) {
+			// Collect consecutive table lines
 			tableStart := i
-			for i < len(m.lines) && isTableLine(m.lines[i]) {
+			for i < len(visible) && isTableLine(visible[i]) {
 				i++
 			}
-			styled = append(styled, m.renderTableBlock(m.lines[tableStart:i])...)
-			continue
-		}
+			tableLines := visible[tableStart:i]
 
-		if strings.HasPrefix(trimmed, "```") {
-			i++
-			var codeLines []string
-			for i < len(m.lines) {
-				if strings.TrimSpace(m.lines[i]) == "```" {
-					i++
-					break
-				}
-				codeLines = append(codeLines, m.lines[i])
-				i++
+			// Also look ahead in full document for remaining table rows
+			// that may be just beyond the visible window, to get correct column widths
+			fullTableStart := m.scrollOffset + tableStart
+			fullTableEnd := fullTableStart
+			for fullTableEnd < len(m.lines) && isTableLine(m.lines[fullTableEnd]) {
+				fullTableEnd++
 			}
-			codeStyle := lipgloss.NewStyle().Background(m.theme.Surface).Foreground(m.theme.Text)
-			w := m.width - 6
-			if w < 10 {
-				w = 10
-			}
-			for _, cl := range codeLines {
-				for _, wl := range strings.Split(ansi.Wrap("  "+cl, w, ""), "\n") {
-					styled = append(styled, codeStyle.Render(wl))
-				}
-			}
-			continue
-		}
+			fullTable := m.lines[fullTableStart:fullTableEnd]
 
-		if isSpecialBlockLine(trimmed) {
-			styled = append(styled, m.styleLine(line))
-			i++
-			continue
-		}
-
-		start := i
-		for i < len(m.lines) {
-			next := strings.TrimSpace(m.lines[i])
-			if next == "" || isSpecialBlockLine(next) {
-				break
-			}
-			i++
-		}
-		if i > start {
-			paraLines := m.lines[start:i]
-			para := strings.Join(paraLines, " ")
-			w := m.width - 6
-			if w < 10 {
-				w = 10
-			}
-			wrapped := m.wrapParagraph(m.renderInlineElements(para), w)
-			for _, wl := range wrapped {
-				styled = append(styled, wl)
-			}
-		}
-	}
-
-	var flat []string
-	for _, s := range styled {
-		if strings.IndexByte(s, '\n') >= 0 {
-			flat = append(flat, strings.Split(s, "\n")...)
+			// Compute column widths from the full table, render only visible rows
+			colWidths := computeColumnWidths(fullTable, m.width-6)
+			rendered := m.renderTableBlock(tableLines, colWidths, fullTableStart)
+			styled = append(styled, rendered...)
 		} else {
-			flat = append(flat, s)
+			styled = append(styled, m.styleLine(visible[i]))
+			i++
 		}
 	}
-	return flat
+
+	// Pad to fill height
+	for len(styled) < bh {
+		styled = append(styled, "")
+	}
+
+	return padStyle.Render(strings.Join(styled, "\n"))
 }
 
+// isTableLine checks if a line is part of a markdown table.
 func isTableLine(line string) bool {
 	trimmed := strings.TrimSpace(line)
 	return len(trimmed) > 1 && trimmed[0] == '|'
@@ -334,48 +280,86 @@ func parseTableCells(line string) []string {
 	return cells
 }
 
-func detectAlignment(sep string) lipgloss.Position {
-	s := strings.TrimSpace(sep)
-	if strings.HasPrefix(s, ":") && strings.HasSuffix(s, ":") {
-		return lipgloss.Center
-	}
-	if strings.HasSuffix(s, ":") {
-		return lipgloss.Right
-	}
-	return lipgloss.Left
-}
-
-func (m ViewerModel) renderTableBlock(lines []string) []string {
-	if len(lines) == 0 {
-		return nil
-	}
-
-	var headers []string
-	var dataRows [][]string
-	var alignments []lipgloss.Position
-
+// computeColumnWidths calculates max width per column across all table rows.
+func computeColumnWidths(lines []string, maxTotal int) []int {
+	maxCols := 0
 	for _, line := range lines {
 		if isTableSeparator(line) {
-			if len(alignments) == 0 {
-				for _, cell := range parseTableCells(line) {
-					alignments = append(alignments, detectAlignment(cell))
-				}
-			}
 			continue
 		}
 		cells := parseTableCells(line)
-		rendered := make([]string, len(cells))
-		for i, c := range cells {
-			rendered[i] = m.renderInlineElements(c)
+		if len(cells) > maxCols {
+			maxCols = len(cells)
 		}
-		if headers == nil {
-			headers = rendered
-		} else {
-			dataRows = append(dataRows, rendered)
+	}
+	if maxCols == 0 {
+		return nil
+	}
+
+	widths := make([]int, maxCols)
+	for _, line := range lines {
+		if isTableSeparator(line) {
+			continue
+		}
+		cells := parseTableCells(line)
+		for i, cell := range cells {
+			if i < maxCols {
+				w := lipgloss.Width(cell)
+				if w > widths[i] {
+					widths[i] = w
+				}
+			}
 		}
 	}
 
-	if len(headers) == 0 {
+	// Cap individual columns based on column count
+	maxColW := 45
+	if maxCols > 5 {
+		maxColW = 30
+	}
+	if maxCols > 7 {
+		maxColW = 22
+	}
+	for i := range widths {
+		if widths[i] > maxColW {
+			widths[i] = maxColW
+		}
+		if widths[i] < 3 {
+			widths[i] = 3
+		}
+	}
+
+	// Shrink to fit available width
+	for {
+		total := 1 // trailing border
+		for _, w := range widths {
+			total += w + 3 // cell padding + border
+		}
+		if total <= maxTotal {
+			break
+		}
+		// Find the widest column and shrink it by 1
+		widestIdx := 0
+		widestVal := 0
+		for i, w := range widths {
+			if w > widestVal {
+				widestVal = w
+				widestIdx = i
+			}
+		}
+		if widths[widestIdx] <= 3 {
+			break // can't shrink further
+		}
+		widths[widestIdx]--
+	}
+
+	return widths
+}
+
+// renderTableBlock renders table lines with aligned columns and box-drawing borders.
+func (m ViewerModel) renderTableBlock(lines []string, colWidths []int, firstLineIdx int) []string {
+	if len(lines) == 0 || len(colWidths) == 0 {
+		// Fallback: render as plain text
 		var result []string
 		for _, line := range lines {
 			result = append(result, m.styleLine(line))
@@ -383,229 +367,177 @@ func (m ViewerModel) renderTableBlock(lines []string) []string {
 		return result
 	}
 
-	w := m.width - 6
-	if w < 10 {
-		w = 10
-	}
-
+	maxCols := len(colWidths)
 	borderStyle := lipgloss.NewStyle().Foreground(m.theme.Overlay)
-	t := table.New().
-		Width(w).
-		Wrap(true).
-		BorderStyle(borderStyle).
-		BorderTop(true).BorderBottom(true).
-		BorderLeft(true).BorderRight(true).
-		BorderHeader(true).BorderColumn(true)
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(m.theme.Sky)
+	dataStyle := lipgloss.NewStyle().Foreground(m.theme.Text)
 
-	t.Headers(headers...)
-	if len(dataRows) > 0 {
-		t.Rows(dataRows...)
+	// Build top border
+	var result []string
+	var topParts []string
+	for _, w := range colWidths {
+		topParts = append(topParts, strings.Repeat("─", w+2))
 	}
+	result = append(result, borderStyle.Render("┌"+strings.Join(topParts, "┬")+"┐"))
 
-	t.StyleFunc(func(row, col int) lipgloss.Style {
-		st := lipgloss.NewStyle().Padding(0, 1)
-		if row == table.HeaderRow {
-			return st.Bold(true).Foreground(m.theme.Sky)
-		}
-		if col < len(alignments) {
-			st = st.Align(alignments[col])
-		}
-		return st.Foreground(m.theme.Text)
-	})
-
-	return strings.Split(t.String(), "\n")
-}
-
-var (
-	reBold       = regexp.MustCompile(`\*\*([^*]+)\*\*`)
-	reLink       = regexp.MustCompile(`\[([^\]]+)\]\(([^)]+)\)`)
-	reBareURL    = regexp.MustCompile(`https?://\S*[^\s\)\]\.,;:!?]`)
-	reInlineCode = regexp.MustCompile("`([^`]+)`")
-	reListNumber = regexp.MustCompile(`^(\s*\d+\.\s+)(.*)$`)
-)
-
-func isHeadingLine(line string) bool {
-	return strings.HasPrefix(line, "# ") ||
-		strings.HasPrefix(line, "## ") ||
-		strings.HasPrefix(line, "### ") ||
-		strings.HasPrefix(line, "#### ") ||
-		strings.HasPrefix(line, "##### ") ||
-		strings.HasPrefix(line, "###### ")
-}
-
-func isSpecialBlockLine(line string) bool {
-	trimmed := strings.TrimSpace(line)
-	return isHeadingLine(trimmed) ||
-		trimmed == "---" || trimmed == "***" ||
-		strings.HasPrefix(trimmed, "> ") ||
-		strings.HasPrefix(trimmed, "|") ||
-		strings.HasPrefix(trimmed, "```") ||
-		strings.HasPrefix(trimmed, "- ") ||
-		strings.HasPrefix(trimmed, "* ") ||
-		reListNumber.MatchString(trimmed) ||
-		(strings.HasPrefix(trimmed, "**") && strings.Contains(trimmed, ":**"))
-}
-
-func (m ViewerModel) wrapParagraph(text string, width int) []string {
-	if width <= 0 {
-		return []string{text}
-	}
-	wrapped := ansi.Wrap(text, width, "")
-	return strings.Split(wrapped, "\n")
-}
-
-func (m ViewerModel) renderInlineElements(line string) string {
-	return m.renderInlineElementsAs(line, m.theme.Subtext)
-}
-
-// renderInlineElementsAs walks the raw line once and reapplies baseColor around
-// every plain-text span, so resets emitted by inline tokens (code, bold, link,
-// bare URL) don't leak through to subsequent text.
-func (m ViewerModel) renderInlineElementsAs(line string, baseColor lipgloss.Color) string {
-	baseStyle := lipgloss.NewStyle().Foreground(baseColor)
-	codeStyle := lipgloss.NewStyle().Background(m.theme.Surface).Foreground(m.theme.Text)
-	boldStyle := lipgloss.NewStyle().Bold(true).Foreground(m.theme.Yellow)
-	linkStyle := lipgloss.NewStyle().Foreground(m.theme.Blue)
-
-	var b strings.Builder
-	rest := line
-	for rest != "" {
-		match := findInlineMatch(rest, codeStyle, boldStyle, linkStyle)
-		if match == nil {
-			b.WriteString(baseStyle.Render(rest))
-			break
-		}
-		if match.start > 0 {
-			b.WriteString(baseStyle.Render(rest[:match.start]))
-		}
-		b.WriteString(match.rendered)
-		rest = rest[match.end:]
-	}
-	return b.String()
-}
-
-type inlineMatch struct {
-	start, end int
-	rendered   string
-}
-
-func findInlineMatch(s string, codeStyle, boldStyle, linkStyle lipgloss.Style) *inlineMatch {
-	var best *inlineMatch
-	consider := func(loc []int, rendered func() string) {
-		if loc == nil || (best != nil && loc[0] >= best.start) {
-			return
-		}
-		best = &inlineMatch{start: loc[0], end: loc[1], rendered: rendered()}
-	}
-
-	if loc := reInlineCode.FindStringIndex(s); loc != nil {
-		consider(loc, func() string { return codeStyle.Render(s[loc[0]+1 : loc[1]-1]) })
-	}
-	if loc := reBold.FindStringIndex(s); loc != nil {
-		consider(loc, func() string { return boldStyle.Render(s[loc[0]+2 : loc[1]-2]) })
-	}
-	if loc := reLink.FindStringIndex(s); loc != nil {
-		consider(loc, func() string {
-			sm := reLink.FindStringSubmatch(s[loc[0]:loc[1]])
-			if len(sm) >= 2 {
-				return linkStyle.Render(sm[1])
+	isFirstDataRow := true
+	for _, line := range lines {
+		if isTableSeparator(line) {
+			// Render middle separator
+			var sepParts []string
+			for _, w := range colWidths {
+				sepParts = append(sepParts, strings.Repeat("─", w+2))
 			}
-			return s[loc[0]:loc[1]]
-		})
+			result = append(result, borderStyle.Render("├"+strings.Join(sepParts, "┼")+"┤"))
+			continue
+		}
+
+		cells := parseTableCells(line)
+		var paddedCells []string
+		for i := 0; i < maxCols; i++ {
+			cell := ""
+			if i < len(cells) {
+				cell = cells[i]
+			}
+			cellWidth := lipgloss.Width(cell)
+			colW := colWidths[i]
+
+			if cellWidth > colW {
+				// Truncate — need to handle multi-byte/emoji carefully
+				runes := []rune(cell)
+				truncated := string(runes)
+				for lipgloss.Width(truncated) > colW-3 && len(runes) > 0 {
+					runes = runes[:len(runes)-1]
+					truncated = string(runes)
+				}
+				cell = truncated + "..."
+				cellWidth = lipgloss.Width(cell)
+			}
+
+			padding := colW - cellWidth
+			if padding < 0 {
+				padding = 0
+			}
+			paddedCells = append(paddedCells, " "+cell+strings.Repeat(" ", padding)+" ")
+		}
+
+		// Build row with borders
+		border := borderStyle.Render("│")
+		var rowParts []string
+		for _, cell := range paddedCells {
+			if isFirstDataRow {
+				rowParts = append(rowParts, headerStyle.Render(cell))
+			} else {
+				rowParts = append(rowParts, dataStyle.Render(cell))
+			}
+		}
+		row := border + strings.Join(rowParts, border) + border
+		result = append(result, row)
+		isFirstDataRow = false
 	}
-	if loc := reBareURL.FindStringIndex(s); loc != nil {
-		consider(loc, func() string { return linkStyle.Render(s[loc[0]:loc[1]]) })
+
+	// Bottom border
+	var bottomParts []string
+	for _, w := range colWidths {
+		bottomParts = append(bottomParts, strings.Repeat("─", w+2))
 	}
-	return best
+	result = append(result, borderStyle.Render("└"+strings.Join(bottomParts, "┴")+"┘"))
+
+	return result
 }
+
+var reBold = regexp.MustCompile(`\*\*([^*]+)\*\*`)
 
 func (m ViewerModel) styleLine(line string) string {
 	trimmed := strings.TrimSpace(line)
-	w := m.width - 6
-	if w < 10 {
-		w = 10
-	}
 
+	// H1 — render without the "# " prefix
 	if strings.HasPrefix(trimmed, "# ") && !strings.HasPrefix(trimmed, "## ") {
 		content := strings.TrimPrefix(trimmed, "# ")
-		return lipgloss.NewStyle().Bold(true).Foreground(m.theme.Blue).Width(w).Render("  " + content)
+		return lipgloss.NewStyle().
+			Bold(true).
+			Foreground(m.theme.Blue).
+			Render("  " + content)
 	}
+	// H2 — render without the "## " prefix
 	if strings.HasPrefix(trimmed, "## ") && !strings.HasPrefix(trimmed, "### ") {
 		content := strings.TrimPrefix(trimmed, "## ")
-		return lipgloss.NewStyle().Bold(true).Foreground(m.theme.Mauve).Width(w).Render("  " + content)
+		return lipgloss.NewStyle().
+			Bold(true).
+			Foreground(m.theme.Mauve).
+			Render("  " + content)
 	}
-	if strings.HasPrefix(trimmed, "### ") && !strings.HasPrefix(trimmed, "#### ") {
+	// H3 — render without the "### " prefix
+	if strings.HasPrefix(trimmed, "### ") {
 		content := strings.TrimPrefix(trimmed, "### ")
-		return lipgloss.NewStyle().Bold(true).Foreground(m.theme.Sky).Width(w).Render("  " + content)
+		return lipgloss.NewStyle().
+			Bold(true).
+			Foreground(m.theme.Sky).
+			Render("  " + content)
 	}
-	if strings.HasPrefix(trimmed, "#### ") && !strings.HasPrefix(trimmed, "##### ") {
-		content := strings.TrimPrefix(trimmed, "#### ")
-		return lipgloss.NewStyle().Bold(true).Foreground(m.theme.Subtext).Width(w).Render("    " + content)
-	}
-	if strings.HasPrefix(trimmed, "##### ") && !strings.HasPrefix(trimmed, "###### ") {
-		content := strings.TrimPrefix(trimmed, "##### ")
-		return lipgloss.NewStyle().Bold(true).Foreground(m.theme.Overlay).Width(w).Render("      " + content)
-	}
-	if strings.HasPrefix(trimmed, "###### ") {
-		content := strings.TrimPrefix(trimmed, "###### ")
-		return lipgloss.NewStyle().Bold(true).Foreground(m.theme.Overlay).Width(w).Render("        " + content)
-	}
+	// Horizontal rule
 	if trimmed == "---" || trimmed == "***" {
-		return lipgloss.NewStyle().Foreground(m.theme.Overlay).Width(w).Render(strings.Repeat("─", w))
+		return lipgloss.NewStyle().
+			Foreground(m.theme.Overlay).
+			Render(strings.Repeat("─", m.width-4))
 	}
+	// Blockquote
 	if strings.HasPrefix(trimmed, "> ") {
 		content := strings.TrimPrefix(trimmed, "> ")
 		border := lipgloss.NewStyle().Foreground(m.theme.Overlay).Render("▎ ")
-		textStyle := lipgloss.NewStyle().Foreground(m.theme.Subtext).Italic(true)
-		wrapped := strings.Split(ansi.Wrap(textStyle.Render(content), w-2, ""), "\n")
-		result := make([]string, 0, len(wrapped))
-		for i, line := range wrapped {
-			if i == 0 {
-				result = append(result, border+line)
-			} else {
-				result = append(result, strings.Repeat(" ", ansi.StringWidth(border))+line)
-			}
-		}
-		return strings.Join(result, "\n")
+		text := lipgloss.NewStyle().Foreground(m.theme.Subtext).Italic(true).Render(content)
+		return border + text
 	}
+	// Bold fields like **Score:** 4.0/5 — render with bold label, strip asterisks
 	if strings.HasPrefix(trimmed, "**") && strings.Contains(trimmed, ":**") {
-		styled := m.renderInlineElements(line)
-		return ansi.Wrap(styled, w, "")
+		return m.renderInlineBold(line, m.theme.Yellow)
 	}
+	// Bullet points and numbered lists
 	if strings.HasPrefix(trimmed, "- ") || strings.HasPrefix(trimmed, "* ") {
-		content := trimmed[2:]
-		marker := lipgloss.NewStyle().Foreground(m.theme.Blue).Render("• ")
-		return m.renderListItem(marker, content, w)
+		return m.renderInlineBold(line, m.theme.Text)
 	}
-	if reListNumber.MatchString(trimmed) {
-		sm := reListNumber.FindStringSubmatch(trimmed)
-		if len(sm) >= 3 {
-			marker := lipgloss.NewStyle().Foreground(m.theme.Blue).Render(sm[1])
-			return m.renderListItem(marker, sm[2], w)
-		}
+	if len(trimmed) > 2 && trimmed[0] >= '0' && trimmed[0] <= '9' && strings.Contains(trimmed[:3], ".") {
+		return m.renderInlineBold(line, m.theme.Text)
 	}
 
-	styled := m.renderInlineElementsAs(trimmed, m.theme.Subtext)
-	return ansi.Wrap(styled, w, "")
+	// Default — still check for inline bold
+	if strings.Contains(trimmed, "**") {
+		return m.renderInlineBold(line, m.theme.Subtext)
+	}
+
+	return lipgloss.NewStyle().
+		Foreground(m.theme.Subtext).
+		Render(line)
 }
 
-func (m ViewerModel) renderListItem(marker, content string, width int) string {
-	markerWidth := ansi.StringWidth(marker)
-	textWidth := width - markerWidth
-	if textWidth < 10 {
-		textWidth = 10
+// renderInlineBold renders a line with **bold** segments highlighted.
+func (m ViewerModel) renderInlineBold(line string, baseColor lipgloss.Color) string {
+	baseStyle := lipgloss.NewStyle().Foreground(baseColor)
+	boldStyle := lipgloss.NewStyle().Bold(true).Foreground(m.theme.Yellow)
+
+	matches := reBold.FindAllStringIndex(line, -1)
+	if len(matches) == 0 {
+		return baseStyle.Render(line)
 	}
-	styled := m.renderInlineElementsAs(content, m.theme.Text)
-	lines := strings.Split(ansi.Wrap(styled, textWidth, ""), "\n")
-	result := make([]string, 0, len(lines))
-	for i, line := range lines {
-		if i == 0 {
-			result = append(result, marker+line)
-		} else {
-			result = append(result, strings.Repeat(" ", markerWidth)+line)
+
+	var result strings.Builder
+	last := 0
+	for _, loc := range matches {
+		// Render text before the bold
+		if loc[0] > last {
+			result.WriteString(baseStyle.Render(line[last:loc[0]]))
 		}
+		// Extract bold content (without **)
+		boldText := line[loc[0]+2 : loc[1]-2]
+		result.WriteString(boldStyle.Render(boldText))
+		last = loc[1]
 	}
-	return strings.Join(result, "\n")
+	// Render remaining text
+	if last < len(line) {
+		result.WriteString(baseStyle.Render(line[last:]))
+	}
+
+	return result.String()
 }
 
 func (m ViewerModel) renderFooter() string {
