@@ -206,8 +206,8 @@ Save full evaluation in `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 - Company
 - Role
 - Score: match average (1-5)
-- Status: `Evaluated`
-- PDF: ❌ (or ✅ if auto-pipeline generated PDF)
+- Status: `Evaluated` if score >= 3.8, otherwise `SKIP`
+- PDF: ✅ only if score >= 3.8 and auto-pipeline generated PDF; otherwise ❌
 - Report: link relative to the report .md (e.g., `[001](reports/001-company-2026-01-01.md)`)
 
 **Tracker format:**

@@ -15,11 +15,14 @@
 9. Reorder experience bullets by JD relevance
 10. Build competency grid from JD requirements (6-8 keyword phrases)
 11. Inject keywords naturally into existing achievements (NEVER invent)
-12. Generate full HTML from template + personalized content
+12. Prefer Typst in this repo/branch. Use `templates/cv-template.typ` first unless the user explicitly asks for HTML or Canva.
 13. Read `name` from `config/profile.yml` → normalize to kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
-14. Write HTML to `/tmp/cv-{candidate}-{company}.html`
-15. Execute: `node generate-pdf.mjs /tmp/cv-{candidate}-{company}.html output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --format={letter|a4}`
-16. Report: PDF path, number of pages, keyword coverage %
+14. Build a Typst payload JSON using the same tailored content (summary, competencies, reordered experience, projects, education, certifications, skills)
+15. Write payload to `/tmp/cv-{candidate}-{company}.json`
+16. Execute: `typst compile --root . --input payload=../../../../tmp/cv-{candidate}-{company}.json templates/cv-template.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
+17. Delete `/tmp/cv-{candidate}-{company}.json` after successful compile
+18. If Typst is unavailable or the user explicitly asks for HTML, fall back to the HTML template path below
+19. Report: PDF path, number of pages, keyword coverage %
 
 ## ATS Rules (clean parsing)
 
@@ -42,6 +45,61 @@
 - **Margins**: 0.6in
 - **Background**: pure white
 
+## Template Typst (preferred in this repo)
+
+Use `templates/cv-template.typ` first on this branch.
+
+### Typst payload
+
+Write a JSON payload to `/tmp/cv-{candidate}-{company}.json`:
+
+```json
+{
+  "meta": {
+    "candidate_name": "...",
+    "company": "...",
+    "role": "...",
+    "language": "en",
+    "paper_size": "letter",
+    "source_jd": "URL or path to JD",
+    "source_report": "path/to/report.md"
+  },
+  "identity": {
+    "full_name": "...",
+    "location": "...",
+    "contacts": [
+      {"href": "mailto:...", "display": "..."},
+      {"href": "https://linkedin.com/in/...", "display": "linkedin.com/in/..."},
+      {"href": "https://github.com/...", "display": "github.com/..."},
+      {"href": "https://portfolio-url", "display": "portfolio-url"}
+    ]
+  },
+  "summary": "...",
+  "core_competencies": ["...", "..."],
+  "experience": [{ "company": "...", "location": "...", "role": "...", "period": "...", "bullets": ["..."] }],
+  "projects": [{ "title": "...", "badge": "...", "description": "...", "tech": "..." }],
+  "education": [{ "title": "...", "institution": "...", "year": "...", "description": "..." }],
+  "certifications": [{ "title": "...", "issuer": "...", "year": "..." }],
+  "skills": [{ "category": "...", "items": ["..."] }]
+}
+```
+
+### Typst compile
+
+Run:
+
+```bash
+typst compile --root . --input payload=../../../../tmp/cv-{candidate}-{company}.json templates/cv-template.typ output/{YYYY-MM-DD}/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf
+```
+
+### Typst rules
+
+- Use the same content generation rules as this mode — do not invent a separate summary style, section order, or keyword strategy
+- Pull `candidate_name`, contacts, and location from `config/profile.yml`
+- Keep `projects` empty if `cv.md` has no dedicated Projects section
+- Delete the payload JSON from `/tmp` after successful compile
+- If `typst` is missing from PATH, fall back to the HTML path below
+
 ## Section order (optimized "6-second recruiter scan")
 
 1. Header (large name, gradient, contact, portfolio link)
@@ -63,7 +121,7 @@ Examples of legitimate reformulation:
 
 ## Template HTML
 
-Use the template in `cv-template.html`. Replace the `{{...}}` placeholders with personalized content:
+Fallback only when Typst is unavailable or the user explicitly asks for HTML. Use the template in `cv-template.html`. Replace the `{{...}}` placeholders with personalized content:
 
 | Placeholder | Content |
 |-------------|-----------|

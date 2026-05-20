@@ -27,10 +27,14 @@ Include Block G in the saved report. Add **URL:** {url} and **Legitimacy:** {tie
 
 ## Step 3 — Generate PDF
 
+Only generate the PDF if the final score is **>= 3.8/5**.
+
 Read `config/profile.yml`. Check `cv.output_format`:
 
 - If `"latex"`, execute the full pipeline from `modes/latex.md`
 - Otherwise (default), execute the full pipeline from `modes/pdf.md`
+
+If the score is **< 3.8/5**, skip PDF generation and keep the report only.
 
 ## Step 4 — Draft Application Answers (only if score >= 4.5)
 
@@ -70,6 +74,9 @@ If the final score is >= 4.5, generate a draft of responses for the application 
 
 ## Step 5 — Update Tracker
 
-Record it in `data/applications.md` with all columns including Report and PDF as ✅.
+Record it in `data/applications.md` with all columns.
+
+- If score is **>= 3.8/5** → Status: `Evaluated`, PDF: ✅
+- If score is **< 3.8/5** → Status: `SKIP`, PDF: ❌
 
 **If any step fails**, continue with the next ones and mark the failed step as pending in the tracker.

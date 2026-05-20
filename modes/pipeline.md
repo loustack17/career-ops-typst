@@ -9,7 +9,7 @@ Process job URLs stored in `data/pipeline.md`. The user adds URLs at any time an
    a. Calculate the next sequential `REPORT_NUM` (read `reports/`, take the highest number + 1)
    b. **Extract JD** using Playwright (browser_navigate + browser_snapshot) → WebFetch → WebSearch
    c. If the URL is not accessible → mark as `- [!]` with a note and continue
-   d. **Execute full auto-pipeline**: Evaluation A-F → Report .md → PDF (if score >= 3.0) → Tracker
+   d. **Execute full auto-pipeline**: Evaluation A-F → Report .md → PDF (if score >= 3.8) → Tracker (`Evaluated` if score >= 3.8, otherwise `SKIP`)
    e. **Move from "Pending" to "Processed"**: `- [x] #NNN | URL | Company | Role | Score/5 | PDF ✅/❌`
 3. **If there are 3+ pending URLs**, launch agents in parallel (Agent tool with `run_in_background`) to maximize speed.
 4. **At the end**, show summary table:
